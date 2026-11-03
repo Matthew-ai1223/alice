@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "framework": null,
+  "installCommand": "npm install && npm --prefix server install",
+  "buildCommand": "npm --prefix server run build",
   "cleanUrls": true,
   "rewrites": [
     {

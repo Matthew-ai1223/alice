@@ -26,13 +26,11 @@
 // ---------- Yorùbá Medicinal Data ----------
 // Data is fetched from backend API — no hardcoded entries
 let FOODS = [];
-let CATEGORIES = [];
 
 // ---------- Alphabet List ----------
 let ALPHABET = ["All"];
 
 // ---------- State ----------
-let currentCategory = "all";
 let currentLetter = "All";
 let audioToggle = true;
 let pictureToggle = false;
@@ -42,7 +40,6 @@ let isLoadingData = true; // True until first backend fetch completes
 // ---------- DOM References ----------
 const entriesContainer = document.getElementById("entries-container");
 const alphabetSidebar = document.getElementById("alphabet-sidebar");
-const categoryTabs = document.getElementById("category-tabs");
 const searchInput = document.getElementById("search-input");
 const showMoreBtn = document.getElementById("show-more-btn");
 
@@ -63,16 +60,6 @@ function renderAlphabet() {
   });
 }
 
-// ---------- Render Category Tabs ----------
-function renderCategoryTabs() {
-  if (!categoryTabs || CATEGORIES.length === 0) return;
-  const tabsHtml = [
-    `<button class="category-tab ${currentCategory === 'all' ? 'active' : ''}" data-category="all">All Yorùbá Medicinals</button>`,
-    ...CATEGORIES.map(cat => `<button class="category-tab ${currentCategory === cat.value ? 'active' : ''}" data-category="${cat.value}">${cat.name}</button>`)
-  ].join('');
-  categoryTabs.innerHTML = tabsHtml;
-}
-
 // ---------- Generate Waveform Bars ----------
 function generateWaveformBars() {
   const heights = [8, 12, 6, 14, 9, 11, 7, 13, 8, 10, 6, 12, 9, 14, 7, 11];
@@ -81,10 +68,6 @@ function generateWaveformBars() {
 
 // ---------- Render Food Card ----------
 function renderCard(food) {
-  const catObj = CATEGORIES.find(c => c.value === food.category);
-  const catLabel = catObj ? catObj.name : food.category;
-  const badgeStyle = catObj && catObj.color ? `style="background: ${catObj.color}26; color: ${catObj.color}; border: 1px solid ${catObj.color}40;"` : '';
-
   const imageHtml = food.image
     ? `<img src="${food.image}" alt="${food.name} illustration" loading="lazy">`
     : `<div class="no-image-placeholder">
@@ -98,8 +81,7 @@ function renderCard(food) {
 
   return `
     <article class="food-card" id="card-${food.id}">
-      <div class="food-card-image ${food.category}">
-        <span class="category-badge ${food.category}" ${badgeStyle}>${catLabel}</span>
+      <div class="food-card-image">
         ${imageHtml}
       </div>
       <div class="food-card-body">
@@ -124,11 +106,6 @@ function renderCard(food) {
 // ---------- Filter Foods ----------
 function getFilteredFoods() {
   let filtered = [...FOODS];
-
-  // Category filter
-  if (currentCategory !== "all") {
-    filtered = filtered.filter(f => f.category === currentCategory);
-  }
 
   // Letter filter
   if (currentLetter !== "All") {
@@ -241,18 +218,6 @@ function renderEntries() {
 }
 
 // ---------- Event Listeners ----------
-
-// Category tabs
-categoryTabs.addEventListener("click", (e) => {
-  const tab = e.target.closest(".category-tab");
-  if (tab) {
-    document.querySelectorAll(".category-tab").forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    currentCategory = tab.dataset.category;
-    visibleCount = 9;
-    renderEntries();
-  }
-});
 
 // Toggle switches
 document.getElementById("toggle-audio").addEventListener("click", function () {
@@ -395,7 +360,6 @@ async function fetchMedicinalsFromBackend() {
         name: item.name,
         ipa: item.ipa || '',
         pos: item.pos || 'n.',
-        category: item.category,
         definition: item.definition,
         exampleYoruba: item.exampleYoruba || '',
         exampleEnglish: item.exampleEnglish || '',
@@ -423,20 +387,6 @@ async function fetchMedicinalsFromBackend() {
   }
 }
 
-async function fetchCategoriesFromBackend() {
-  try {
-    const res = await fetch(`${BACKEND_BASE}/api/categories`, { cache: 'no-store' });
-    if (!res.ok) return;
-    const json = await res.json();
-    if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-      CATEGORIES = json.data;
-      renderCategoryTabs();
-    }
-  } catch (err) {
-    console.log('[Backend] Could not load categories:', err.message);
-  }
-}
-
 // ---------- Initialize ----------
 function init() {
   // Show loading state immediately, then fetch real data from backend
@@ -444,7 +394,6 @@ function init() {
   renderEntries();
   setupScrollAnimations();
   initPWA();
-  fetchCategoriesFromBackend();
   fetchMedicinalsFromBackend();
 }
 
