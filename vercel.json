@@ -2,7 +2,8 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm install && npm --prefix server install",
-  "buildCommand": "npm --prefix server run build",
+  "buildCommand": "npm --prefix server run build && node scripts/prepare-public.mjs",
+  "outputDirectory": "public",
   "cleanUrls": true,
   "rewrites": [
     {

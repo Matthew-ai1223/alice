@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm --prefix server run dev",
     "build": "npm --prefix server run build",
-    "vercel-build": "npm --prefix server run build",
+    "vercel-build": "npm --prefix server run build && node scripts/prepare-public.mjs",
     "start": "npm --prefix server run start",
     "seed": "npm --prefix server run seed"
   },
