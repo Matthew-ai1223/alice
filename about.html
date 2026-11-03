@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="About Adeniyi Alice — Yorùbá Linguist, Lexicographer and researcher behind the Digital Dictionary of Yorùbá Traditional Medicinal Vocabulary.">
+  <title>About Adeniyi Alice | Yorùbá Linguist & Lexicographer</title>
+
+  <!-- Prevent Caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- PWA Settings -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1a3c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Yorùbá Medicinal">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="site-nav" id="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Adeniyi Alice</a>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html">Dictionary</a>
+        <a href="about.html" class="current" style="color: var(--white); font-weight: 600;">About</a>
+        <button id="pwa-install-btn" class="nav-install-btn" style="display:none;" aria-label="Install App">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Install App
+        </button>
+        <a href="https://wa.me/?text=Hello%20Adeniyi%20Alice,%20I%20would%20like%20to%20get%20in%20touch%20with%20you" class="nav-cta nav-whatsapp-cta" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px; vertical-align: -2px;">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.058.376-.058c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/>
+          </svg>
+          Contact
+        </a>
+      </div>
+      <button class="nav-mobile-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ====== Breadcrumbs ====== -->
+  <div class="breadcrumbs">
+    <div class="breadcrumbs-inner">
+      <a href="index.html">Home</a>
+      <span>›</span>
+      <span class="current">About Adeniyi Alice</span>
+    </div>
+  </div>
+
+  <!-- ====== Hero Section ====== -->
+  <section class="about-hero">
+    <div class="about-hero-inner">
+      <div class="about-image-wrapper">
+        <div class="about-image-frame">
+          <img src="images/alice.jpg" alt="Portrait of Adeniyi Alice — Yorùbá Linguist & Lexicographer">
+        </div>
+        <div class="about-image-badge">
+          <div class="about-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12"></path><path d="M18 9a6 6 0 0 1-6 6H6"></path><path d="M18 3a6 6 0 0 0-6 6"></path></svg></div>
+          <div class="about-badge-text">
+            <h4>Adeniyi Alice</h4>
+            <p>Lexicographer &amp; Researcher</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-hero-text">
+        <span class="pill-badge">Linguist &amp; Lexicographer</span>
+        <h1>Preserving Indigenous Yorùbá Botanical &amp; Medicinal Heritage</h1>
+        <div class="about-role">Researcher &amp; Compiler · LIN 382 Project Lead</div>
+        <p class="about-lead">
+          Welcome! I am <strong>Adeniyi Alice</strong>, a dedicated Yorùbá linguist and lexicographer. My research focuses on the preservation, documentation, and digital accessibility of traditional Yorùbá medicinal vocabulary, orthography, and native oral pronunciation.
+        </p>
+        <div class="about-hero-actions">
+          <a href="https://wa.me/?text=Hello%20Adeniyi%20Alice,%20I%20am%20interested%20in%20your%20Yor%C3%B9b%C3%A1%20language%20and%20medicinal%20lexicography%20services" class="about-btn-whatsapp" target="_blank" rel="noopener noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.058.376-.058c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/>
+            </svg>
+            Chat on WhatsApp
+          </a>
+          <a href="index.html" class="about-btn-secondary">
+            Browse Dictionary Entries →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Core Pillars Section ====== -->
+  <section class="about-pillars">
+    <div class="about-section-header">
+      <h2>Research &amp; Lexicographical Focus</h2>
+      <p>Bridging traditional indigenous knowledge with systematic modern linguistic methodology.</p>
+    </div>
+
+    <div class="about-pillars-grid">
+      <div class="about-pillar-card">
+        <div class="pillar-icon-box"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"></path><path d="M12 20v-8"></path><path d="M12 12c-3.5 0-6-2.5-6-6 3.5 0 6 2.5 6 6z"></path><path d="M12 12c3.5 0 6-2.5 6-6-3.5 0-6 2.5-6 6z"></path></svg></div>
+        <h3>Ethnobotanical Documentation</h3>
+        <p>Curating and standardizing the names, cultural contexts, preparations, and culinary-medicinal usages of indigenous Yorùbá herbs, soups, plants, and natural remedies.</p>
+      </div>
+
+      <div class="about-pillar-card">
+        <div class="pillar-icon-box"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></div>
+        <h3>Tonal Orthography &amp; IPA</h3>
+        <p>Precision tone-marking (Àmì Ohùn) and International Phonetic Alphabet (IPA) transcriptions to preserve semantic nuances and acoustic distinction in spoken Yorùbá.</p>
+      </div>
+
+      <div class="about-pillar-card">
+        <div class="pillar-icon-box"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div>
+        <h3>Audio Pronunciation Archive</h3>
+        <p>Recording native speakers to provide accurate auditory references for linguists, students, herbalists, and diaspora communities worldwide.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Story Section ====== -->
+  <section class="about-story-section">
+    <div class="about-story-inner">
+      <div class="about-story-card">
+        <h2>About the Digital Dictionary Project</h2>
+        <p>
+          The <em>Digital Dictionary of Yorùbá Traditional Medicinal Vocabulary and Its Applications</em> was developed under the academic framework of <strong>LIN 382: Lexicography and Translation (2024/2025 Session)</strong> under the supervision of <strong>Prof. Demola Lewis</strong>.
+        </p>
+        
+        <div class="about-quote-box">
+          <blockquote>
+            "Language is the deepest living vessel of ancestral medical wisdom. When we document traditional vocabulary accurately, we safeguard indigenous science for future generations."
+          </blockquote>
+          <cite>— Adeniyi Alice</cite>
+        </div>
+
+        <p>
+          Each entry in our corpus features verified tone-marked headwords, phonetics, grammatical categorization, English translations, contextual example sentences, photographic illustrations, and native speaker audio recordings.
+        </p>
+
+        <p>
+          Beyond academic lexicography, I provide professional linguistic consultancy, including translation, audio transcription, morphological tagging, and educational material compilation for Yorùbá language learners and researchers.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Contact / WhatsApp Section ====== -->
+  <section class="about-contact-section">
+    <div class="about-contact-inner">
+      <div class="about-contact-info">
+        <h2>Get in Touch</h2>
+        <p>Have inquiries regarding Yorùbá translation, lexicographical consulting, language projects, or traditional botanical vocabulary? Let's connect directly.</p>
+        
+        <div class="about-contact-channels">
+          <div class="contact-channel-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>Fast WhatsApp Responses</span>
+          </div>
+          <div class="contact-channel-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>Translation &amp; Lexicography Consulting</span>
+          </div>
+          <div class="contact-channel-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Available for Research Collaborations</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-whatsapp-box">
+        <div class="wa-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+        <h3>Direct WhatsApp Chat</h3>
+        <p>Click below to open a direct conversation on WhatsApp with Adeniyi Alice.</p>
+        <a href="https://wa.me/?text=Hello%20Adeniyi%20Alice,%20I%20am%20contacting%20you%20via%20your%20About%20page" class="wa-btn" target="_blank" rel="noopener noreferrer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.058.376-.058c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/>
+          </svg>
+          Chat on WhatsApp Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Footer ====== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      © Adeniyi Alice · Linguistics Hub · <a href="index.html" style="color: var(--gold-400);">Back to Dictionary</a> · <a href="admin.html" style="color: var(--gold-400);">Admin Portal</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile navigation toggle
+    const toggle = document.getElementById('nav-toggle');
+    const links = document.getElementById('nav-links');
+    if (toggle && links) {
+      toggle.addEventListener('click', () => {
+        links.classList.toggle('open');
+      });
+    }
+
+    // PWA Service Worker Registration & Cache Purging
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
+      });
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
+          .then((reg) => reg.update())
+          .catch((err) => console.warn('[PWA] SW register failed:', err));
+      });
+    }
+
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('pwa-install-btn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) {
+        installBtn.style.display = 'inline-flex';
+        installBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          installBtn.style.display = 'none';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

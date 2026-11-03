@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<canvas id="canvas" style="display:none"></canvas>
+<script>
+// Generate PWA icons from alice.jpg
+const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+const img = new Image();
+img.crossOrigin = "anonymous";
+img.onload = function() {
+  sizes.forEach(size => {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw navy background
+    ctx.fillStyle = '#0f1a3c';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Draw circular crop of the image centered
+    const padding = size * 0.1;
+    const circleRadius = (size - padding * 2) / 2;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
+    ctx.clip();
+    
+    // Draw image centered and cropped
+    const aspect = img.width / img.height;
+    let sx, sy, sw, sh;
+    if (aspect > 1) {
+      sh = img.height;
+      sw = img.height;
+      sx = (img.width - sw) / 2;
+      sy = 0;
+    } else {
+      sw = img.width;
+      sh = img.width;
+      sx = 0;
+      sy = 0;
+    }
+    
+    ctx.drawImage(img, sx, sy, sw, sh, padding, padding, size - padding * 2, size - padding * 2);
+    ctx.restore();
+    
+    // Gold ring
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = '#c4953a';
+    ctx.lineWidth = Math.max(2, size * 0.02);
+    ctx.stroke();
+    
+    // Download
+    const link = document.createElement('a');
+    link.download = `icon-${size}x${size}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  
+  // Maskable icons (with more padding for safe zone)
+  [192, 512].forEach(size => {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    // Fill background
+    ctx.fillStyle = '#0f1a3c';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Maskable safe zone is 80% of the icon
+    const padding = size * 0.2;
+    const circleRadius = (size - padding * 2) / 2;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, circleRadius, 0, Math.PI * 2);
+    ctx.clip();
+    
+    const aspect = img.width / img.height;
+    let sx, sy, sw, sh;
+    if (aspect > 1) {
+      sh = img.height;
+      sw = img.height;
+      sx = (img.width - sw) / 2;
+      sy = 0;
+    } else {
+      sw = img.width;
+      sh = img.width;
+      sx = 0;
+      sy = 0;
+    }
+    
+    ctx.drawImage(img, sx, sy, sw, sh, padding, padding, size - padding * 2, size - padding * 2);
+    ctx.restore();
+    
+    const link = document.createElement('a');
+    link.download = `icon-maskable-${size}x${size}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  
+  document.body.innerHTML = '<h1 style="color:green;font-family:sans-serif;padding:40px">✅ All icons generated! Check your downloads folder and move them to the icons/ directory.</h1>';
+};
+img.src = '../images/alice.jpg';
+</script>
+</body>
+</html>

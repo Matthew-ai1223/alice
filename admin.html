@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Yorùbá Medicinal Upload & Management | Adeniyi Alice</title>
+  
+  <!-- Prevent Caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Admin Specific Styling */
+    .admin-body {
+      background-color: #0b1226;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .admin-nav {
+      background: #0f1a3c;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-nav .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-nav h1 {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      color: #fff;
+      margin: 0;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-online {
+      background: rgba(39, 174, 96, 0.2);
+      color: #2ecc71;
+      border: 1px solid rgba(39, 174, 96, 0.4);
+    }
+    .status-offline {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid rgba(231, 76, 60, 0.4);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .admin-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .admin-nav-links a {
+      color: #a0aed4;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .admin-nav-links a:hover {
+      color: #fff;
+    }
+    .admin-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .metric-card {
+      background: #142044;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .metric-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: rgba(196, 149, 58, 0.15);
+      color: #c4953a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    .metric-info h3 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+      line-height: 1;
+    }
+    .metric-info p {
+      font-size: 0.82rem;
+      color: #a0aed4;
+      margin: 4px 0 0 0;
+    }
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    /* Form Card */
+    .form-card {
+      background: #142044;
+      border: 1px solid rgba(196, 149, 58, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      position: sticky;
+      top: 90px;
+    }
+    .form-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .form-header h2 {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      color: #fff;
+      margin: 0;
+    }
+    .reset-btn {
+      font-size: 0.78rem;
+      color: #c4953a;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px 8px;
+    }
+    .reset-btn:hover {
+      text-decoration: underline;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      background: #0f1833;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+      border-color: #c4953a;
+      box-shadow: 0 0 0 2px rgba(196, 149, 58, 0.25);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    /* Tone Marking Keyboard Helper */
+    .tone-helper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .tone-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .tone-btn:hover {
+      background: #c4953a;
+      color: #fff;
+    }
+    /* File Dropzones */
+    .file-dropzone {
+      border: 2px dashed rgba(196, 149, 58, 0.35);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      background: rgba(15, 24, 51, 0.5);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .file-dropzone:hover {
+      border-color: #c4953a;
+      background: rgba(196, 149, 58, 0.05);
+    }
+    .file-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .dropzone-label {
+      font-size: 0.82rem;
+      color: #a0aed4;
+    }
+    .preview-box {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #0b1226;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    .preview-box img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .preview-box audio {
+      height: 36px;
+      width: 100%;
+    }
+    .submit-btn {
+      width: 100%;
+      background: #c4953a;
+      color: #fff;
+      border: none;
+      padding: 13px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .submit-btn:hover {
+      background: #d4a84e;
+      transform: translateY(-1px);
+    }
+    /* Entries Table Card */
+    .table-card {
+      background: #142044;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .table-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      background: #0f1833;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px 14px 10px 38px;
+      color: #fff;
+      font-size: 0.88rem;
+    }
+    .search-box svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7080bc;
+    }
+    .category-filter-select {
+      background: #0f1833;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+    }
+    .medicinal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .medicinal-table th {
+      text-align: left;
+      padding: 12px 14px;
+      color: #a0aed4;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .medicinal-table td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+    .medicinal-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .thumb-cell img {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+    .thumb-placeholder {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      background: #0b1226;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4a5da0;
+      font-size: 1.2rem;
+    }
+    .badge-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .badge-soup { background: rgba(39, 174, 96, 0.2); color: #2ecc71; }
+    .badge-swallow { background: rgba(142, 68, 173, 0.2); color: #9b59b6; }
+    .badge-snack { background: rgba(149, 165, 166, 0.2); color: #bdc3c7; }
+    .badge-stew { background: rgba(192, 57, 43, 0.2); color: #e74c3c; }
+    .badge-porridge { background: rgba(230, 126, 34, 0.2); color: #f39c12; }
+    .badge-pudding { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+    .badge-herb { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+    
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0f1833;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-icon:hover {
+      border-color: #c4953a;
+      color: #c4953a;
+    }
+    .btn-delete:hover {
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #142044;
+      border: 1px solid #c4953a;
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* ====== Category Manager Panel ====== */
+    .cat-manager-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(196, 149, 58, 0.15);
+      border: 1px solid rgba(196, 149, 58, 0.4);
+      color: #c4953a;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cat-manager-toggle:hover {
+      background: rgba(196, 149, 58, 0.25);
+      border-color: #c4953a;
+      transform: translateY(-1px);
+    }
+
+    /* Overlay */
+    .cat-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .cat-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Side Panel */
+    .cat-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 480px;
+      max-width: 92vw;
+      height: 100vh;
+      background: #0f1a3c;
+      border-left: 1px solid rgba(196, 149, 58, 0.3);
+      box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cat-panel.open {
+      transform: translateX(0);
+    }
+
+    .cat-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .cat-panel-header h2 {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      color: #fff;
+      margin: 0;
+    }
+    .cat-panel-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #a0aed4;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .cat-panel-close:hover {
+      background: rgba(231, 76, 60, 0.15);
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+
+    /* Add form */
+    .cat-add-form {
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .cat-add-form h3 {
+      font-size: 0.85rem;
+      color: #c4953a;
+      margin: 0 0 12px 0;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .cat-add-row {
+      display: grid;
+      grid-template-columns: 1fr 100px 50px auto;
+      gap: 8px;
+      align-items: end;
+    }
+    .cat-add-row .form-group {
+      margin-bottom: 0;
+    }
+    .cat-add-row label {
+      display: block;
+      font-size: 0.72rem;
+      color: #7080bc;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .cat-add-row input {
+      width: 100%;
+      background: #0b1226;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: #fff;
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .cat-add-row input:focus {
+      border-color: #c4953a;
+    }
+    .cat-add-row input[type="color"] {
+      padding: 2px;
+      height: 36px;
+      cursor: pointer;
+      border-radius: 6px;
+      background: #0b1226;
+    }
+    .cat-add-btn {
+      background: #c4953a;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+      height: 36px;
+    }
+    .cat-add-btn:hover {
+      background: #d4a84e;
+    }
+
+    /* Category list */
+    .cat-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 24px 24px;
+    }
+    .cat-list-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .cat-list-container::-webkit-scrollbar-thumb {
+      background: rgba(196, 149, 58, 0.3);
+      border-radius: 3px;
+    }
+
+    .cat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #142044;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .cat-item:hover {
+      border-color: rgba(196, 149, 58, 0.3);
+      background: #182552;
+    }
+
+    .cat-item-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+    .cat-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .cat-item-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cat-item-value {
+      font-size: 0.72rem;
+      color: #7080bc;
+      font-family: monospace;
+    }
+    .cat-item-count {
+      font-size: 0.72rem;
+      color: #a0aed4;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .cat-item-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .cat-item-actions button {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0b1226;
+      color: #a0aed4;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .cat-item-actions button:hover {
+      border-color: #c4953a;
+      color: #c4953a;
+    }
+    .cat-item-actions button.cat-delete-btn:hover {
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+
+    /* Edit mode */
+    .cat-item.editing {
+      border-color: rgba(196, 149, 58, 0.5);
+      background: #182552;
+    }
+    .cat-edit-form {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cat-item.editing .cat-item-display { display: none; }
+    .cat-item.editing .cat-edit-form { display: flex; }
+    .cat-item.editing { flex-wrap: wrap; }
+
+    .cat-edit-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .cat-edit-row input {
+      width: 100%;
+      background: #0b1226;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #fff;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .cat-edit-row input:focus {
+      border-color: #c4953a;
+    }
+    .cat-edit-row input[type="color"] {
+      padding: 2px;
+      height: 32px;
+      cursor: pointer;
+    }
+    .cat-edit-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .cat-edit-actions button {
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .cat-save-btn {
+      background: #c4953a;
+      color: #fff;
+    }
+    .cat-save-btn:hover {
+      background: #d4a84e;
+    }
+    .cat-cancel-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #a0aed4;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    .cat-cancel-btn:hover {
+      color: #fff;
+    }
+
+    .cat-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #7080bc;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body class="admin-body">
+
+  <!-- ====== Admin Nav ====== -->
+  <header class="admin-nav">
+    <div class="logo-group">
+      <h1>Adeniyi Alice</h1>
+      <span style="color: #7080bc;">/</span>
+      <span style="font-size: 0.95rem; font-weight: 600; color: #c4953a;">Medicinal Admin Portal</span>
+      <div id="connection-status" class="status-badge status-offline">
+        <span class="status-dot"></span>
+        <span id="status-text">Backend Offline</span>
+      </div>
+    </div>
+    <div class="admin-nav-links">
+      <a href="index.html">← Client Dictionary</a>
+      <a href="about.html">About Page</a>
+      <a href="http://localhost:5000/api/health" target="_blank" style="color: #c4953a;">API Health ↗</a>
+    </div>
+  </header>
+
+  <!-- ====== Main Container ====== -->
+  <main class="admin-container">
+
+    <!-- Metrics Row -->
+    <section class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-icon">🌿</div>
+        <div class="metric-info">
+          <h3 id="stat-total">0</h3>
+          <p>Medicinal Entries</p>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🎙️</div>
+        <div class="metric-info">
+          <h3 id="stat-audio">0</h3>
+          <p>Audio Recordings</p>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🖼️</div>
+        <div class="metric-info">
+          <h3 id="stat-images">0</h3>
+          <p>Illustrated Entries</p>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">🔤</div>
+        <div class="metric-info">
+          <h3 id="stat-letters">0</h3>
+          <p>Letters Covered</p>
+        </div>
+      </div>
+      <div class="metric-card" style="cursor: pointer;" onclick="openCategoryManager()" title="Click to manage categories">
+        <div class="metric-icon">🏷️</div>
+        <div class="metric-info">
+          <h3 id="stat-categories">0</h3>
+          <p>Categories</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Category Manager Toggle Button -->
+    <div style="margin-bottom: 24px; display: flex; justify-content: flex-end;">
+      <button class="cat-manager-toggle" onclick="openCategoryManager()">
+        🏷️ Manage Categories
+      </button>
+    </div>
+
+    <!-- Layout Grid: Left Form, Right Table -->
+    <div class="admin-grid">
+
+      <!-- Upload / Edit Form -->
+      <section class="form-card">
+        <div class="form-header">
+          <h2 id="form-title">Upload New Medicinal</h2>
+          <button class="reset-btn" id="reset-form-btn">Clear / New</button>
+        </div>
+
+        <form id="medicinal-form">
+          <input type="hidden" id="entry-id" value="">
+
+          <!-- Name with Tone Helper -->
+          <div class="form-group">
+            <label for="name">Headword (Yorùbá Name) *</label>
+            <input type="text" id="name" class="form-control" placeholder='e.g. Ẹ̀gúsí, Ewédú, Àpọ̀n' required>
+            <div class="tone-helper">
+              <span style="font-size: 0.72rem; color: #7080bc; margin-right: 4px;">Insert:</span>
+              <button type="button" class="tone-btn" onclick="insertTone('á')">á</button>
+              <button type="button" class="tone-btn" onclick="insertTone('à')">à</button>
+              <button type="button" class="tone-btn" onclick="insertTone('é')">é</button>
+              <button type="button" class="tone-btn" onclick="insertTone('è')">è</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ẹ́')">ẹ́</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ẹ̀')">ẹ̀</button>
+              <button type="button" class="tone-btn" onclick="insertTone('í')">í</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ì')">ì</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ó')">ó</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ò')">ò</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ọ́')">ọ́</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ọ̀')">ọ̀</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ú')">ú</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ù')">ù</button>
+              <button type="button" class="tone-btn" onclick="insertTone('n̄')">n̄</button>
+              <button type="button" class="tone-btn" onclick="insertTone('ǹ')">ǹ</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- IPA -->
+            <div class="form-group">
+              <label for="ipa">IPA Pronunciation</label>
+              <input type="text" id="ipa" class="form-control" placeholder='e.g. ɛ̀gúsí'>
+            </div>
+            <!-- Part of Speech -->
+            <div class="form-group">
+              <label for="pos">Part of Speech</label>
+              <select id="pos" class="form-control">
+                <option value="n.">Noun (n.)</option>
+                <option value="v.">Verb (v.)</option>
+                <option value="adj.">Adjective (adj.)</option>
+                <option value="comp.">Compound (comp.)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- Category (Dynamically loaded from API) -->
+            <div class="form-group">
+              <label for="category">Category *</label>
+              <select id="category" class="form-control" required>
+                <option value="">Loading categories...</option>
+              </select>
+            </div>
+            <!-- Letter Cluster -->
+            <div class="form-group">
+              <label for="letter">Alphabet Group</label>
+              <select id="letter" class="form-control">
+                <option value="">Auto-Detect</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="Ẹ">Ẹ</option>
+                <option value="F">F</option>
+                <option value="Gb">Gb</option>
+                <option value="I">I</option>
+                <option value="K">K</option>
+                <option value="L">L</option>
+                <option value="M">M</option>
+                <option value="O">O</option>
+                <option value="Ọ">Ọ</option>
+                <option value="P">P</option>
+                <option value="S">S</option>
+                <option value="W">W</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Definition / Medicinal Application -->
+          <div class="form-group">
+            <label for="definition">Definition &amp; Medicinal Application *</label>
+            <textarea id="definition" class="form-control" rows="3" placeholder="Describe botanical properties, preparation, and medicinal benefits..." required></textarea>
+          </div>
+
+          <!-- Example Sentence Yoruba -->
+          <div class="form-group">
+            <label for="exampleYoruba">Context Example (Yorùbá)</label>
+            <input type="text" id="exampleYoruba" class="form-control" placeholder="e.g. Obẹ̀ ẹ̀gúsí ni mo fẹ́ran jù lọ">
+          </div>
+
+          <!-- Example Sentence English -->
+          <div class="form-group">
+            <label for="exampleEnglish">Example Translation (English)</label>
+            <input type="text" id="exampleEnglish" class="form-control" placeholder="e.g. Egusi soup is my favourite">
+          </div>
+
+          <!-- Image Upload -->
+          <div class="form-group">
+            <label>Medicinal Illustration (Image)</label>
+            <div class="file-dropzone" id="image-dropzone">
+              <input type="file" id="image-file" accept="image/*">
+              <div class="dropzone-label">
+                📷 <strong>Click or drop photo here</strong><br>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP (Max 15MB)</span>
+              </div>
+            </div>
+            <div id="image-preview" class="preview-box" style="display: none;">
+              <img id="preview-img" src="" alt="Preview">
+              <span id="preview-img-name" style="font-size: 0.8rem; flex: 1; word-break: break-all;"></span>
+              <button type="button" class="reset-btn" onclick="clearImageUpload()">Remove</button>
+            </div>
+          </div>
+
+          <!-- Audio Upload -->
+          <div class="form-group">
+            <label>Pronunciation Recording (Audio)</label>
+            <div class="file-dropzone" id="audio-dropzone">
+              <input type="file" id="audio-file" accept="audio/*">
+              <div class="dropzone-label">
+                🎙️ <strong>Click or drop audio here</strong><br>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports MP3, WAV, M4A, OGG</span>
+              </div>
+            </div>
+            <div id="audio-preview" class="preview-box" style="display: none;">
+              <audio id="preview-aud" controls></audio>
+              <button type="button" class="reset-btn" onclick="clearAudioUpload()">Remove</button>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">
+            Save Medicinal Entry
+          </button>
+        </form>
+      </section>
+
+      <!-- Entries Table -->
+      <section class="table-card">
+        <div class="table-header-row">
+          <div class="search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="admin-search" placeholder="Filter by Yorùbá name, English or IPA...">
+          </div>
+          <select id="admin-cat-filter" class="category-filter-select">
+            <option value="all">All Categories</option>
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="medicinal-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">Media</th>
+                <th>Yorùbá Name</th>
+                <th>Category</th>
+                <th>Definition</th>
+                <th style="width: 80px;">Audio</th>
+                <th style="width: 90px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="entries-tbody">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #7080bc;">
+                  Connecting to backend server...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ====== Category Manager Side Panel ====== -->
+  <div class="cat-overlay" id="cat-overlay" onclick="closeCategoryManager()"></div>
+  <div class="cat-panel" id="cat-panel">
+    <div class="cat-panel-header">
+      <h2>🏷️ Category Manager</h2>
+      <button class="cat-panel-close" onclick="closeCategoryManager()">✕</button>
+    </div>
+
+    <!-- Add New Category Form -->
+    <div class="cat-add-form">
+      <h3>Add New Category</h3>
+      <div class="cat-add-row">
+        <div class="form-group">
+          <label>Display Name</label>
+          <input type="text" id="new-cat-name" placeholder='e.g. Herb / Botanical Flora'>
+        </div>
+        <div class="form-group">
+          <label>Slug Value</label>
+          <input type="text" id="new-cat-value" placeholder='e.g. herb'>
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="color" id="new-cat-color" value="#c4953a">
+        </div>
+        <button class="cat-add-btn" onclick="addCategory()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Category List -->
+    <div class="cat-list-container" id="cat-list-container">
+      <div class="cat-empty">Loading categories...</div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast">
+    <span id="toast-icon">✅</span>
+    <span id="toast-message">Operation successful!</span>
+  </div>
+
+  <script>
+    const API_BASE = (() => {
+      if (typeof window === 'undefined') return 'http://localhost:5000';
+      if (!window.location.protocol.startsWith('http')) return 'http://localhost:5000';
+      if (window.location.hostname === 'localhost' && window.location.port && window.location.port !== '5000') {
+        return 'http://localhost:5000';
+      }
+      return '';
+    })();
+    const API_URL = `${API_BASE}/api/medicinals`;
+    const CATEGORIES_URL = `${API_BASE}/api/categories`;
+    const HEALTH_URL = `${API_BASE}/api/health`;
+
+    let allMedicinals = [];
+    let allCategories = [];
+    let isBackendOnline = false;
+
+    // Elements
+    const form = document.getElementById('medicinal-form');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const resetBtn = document.getElementById('reset-form-btn');
+    const entryIdInput = document.getElementById('entry-id');
+
+    const imageFileInput = document.getElementById('image-file');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const previewImgName = document.getElementById('preview-img-name');
+
+    const audioFileInput = document.getElementById('audio-file');
+    const audioPreview = document.getElementById('audio-preview');
+    const previewAud = document.getElementById('preview-aud');
+
+    const entriesTbody = document.getElementById('entries-tbody');
+    const searchInput = document.getElementById('admin-search');
+    const catFilter = document.getElementById('admin-cat-filter');
+
+    const connStatus = document.getElementById('connection-status');
+    const statusText = document.getElementById('status-text');
+
+    // 1. Check Backend Health
+    async function checkHealth() {
+      try {
+        const res = await fetch(HEALTH_URL, { cache: 'no-store' });
+        if (res.ok) {
+          const healthData = await res.json().catch(() => ({}));
+          isBackendOnline = true;
+          connStatus.className = 'status-badge status-online';
+          const platformLabel = healthData.platform || (window.location.port === '5000' ? 'Port 5000' : 'Vercel / Cloud');
+          statusText.textContent = `Backend Online (${platformLabel})`;
+        } else {
+          throw new Error('Not ok');
+        }
+      } catch (err) {
+        isBackendOnline = false;
+        connStatus.className = 'status-badge status-offline';
+        statusText.textContent = 'Backend Offline';
+      }
+    }
+
+    // 2. Fetch Stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/medicinals/stats`, { cache: 'no-store' });
+        const json = await res.json();
+
+        if (json.success) {
+          document.getElementById('stat-total').textContent = json.data.totalEntries;
+          document.getElementById('stat-audio').textContent = json.data.audioCount;
+          document.getElementById('stat-images').textContent = json.data.imageCount;
+          document.getElementById('stat-letters').textContent = json.data.letterCount;
+        }
+      } catch (_) {}
+    }
+
+    // 3. Fetch Medicinals
+    async function loadMedicinals() {
+      entriesTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #7080bc;">Loading entries...</td></tr>';
+      
+      try {
+        const res = await fetch(API_URL, { cache: 'no-store' });
+        const json = await res.json();
+        if (json.success) {
+          allMedicinals = json.data;
+          renderTable();
+          loadStats();
+        } else {
+          throw new Error(json.message);
+        }
+      } catch (err) {
+        entriesTbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: #e74c3c;">
+              <strong>⚠️ Unable to connect to Backend Server.</strong><br>
+              <span style="font-size: 0.8rem; color: #a0aed4;">
+                Please ensure you started the backend: <code>cd server && npm run dev</code><br>
+                Server address: http://localhost:5000
+              </span>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // 4. Render Table with Search and Filter
+    function renderTable() {
+      const q = searchInput.value.toLowerCase().trim();
+      const cat = catFilter.value;
+
+      let filtered = allMedicinals.filter(item => {
+        const matchCat = cat === 'all' || item.category === cat;
+        const matchSearch = !q ||
+          item.name.toLowerCase().includes(q) ||
+          (item.ipa && item.ipa.toLowerCase().includes(q)) ||
+          item.definition.toLowerCase().includes(q);
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        entriesTbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 32px; color: #7080bc;">
+              No entries matching your filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      entriesTbody.innerHTML = filtered.map(item => {
+        // Resolve image URL
+        let imgSrc = '';
+        if (item.imageUrl) {
+          imgSrc = item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE}${item.imageUrl}`;
+        }
+
+        let audSrc = '';
+        if (item.audioUrl) {
+          audSrc = item.audioUrl.startsWith('http') ? item.audioUrl : `${API_BASE}${item.audioUrl}`;
+        }
+
+        const thumbHtml = imgSrc
+          ? `<div class="thumb-cell"><img src="${imgSrc}" alt="${item.name}"></div>`
+          : `<div class="thumb-placeholder">🌿</div>`;
+
+        const audioBtn = audSrc
+          ? `<button class="btn-icon" title="Listen" onclick="playAudioRow('${audSrc}')">▶</button>`
+          : `<span style="font-size: 0.75rem; color: #7080bc;">None</span>`;
+
+        return `
+          <tr>
+            <td>${thumbHtml}</td>
+            <td>
+              <strong style="color: #fff; font-size: 0.95rem;">${item.name}</strong>
+              <div style="font-size: 0.78rem; color: #c4953a;">${item.ipa ? `[${item.ipa}]` : ''} <em>${item.pos || ''}</em></div>
+            </td>
+            <td><span class="badge-pill" style="${getCategoryBadgeStyle(item.category)}">${item.category}</span></td>
+            <td style="max-width: 320px; color: #cbd5e1; font-size: 0.82rem; line-height: 1.4;">
+              ${item.definition.length > 90 ? item.definition.substring(0, 90) + '…' : item.definition}
+            </td>
+            <td>${audioBtn}</td>
+            <td style="text-align: right;">
+              <div class="action-btns" style="justify-content: flex-end;">
+                <button class="btn-icon" title="Edit" onclick="editEntry('${item.id || item._id}')">✏️</button>
+                <button class="btn-icon btn-delete" title="Delete" onclick="deleteEntry('${item.id || item._id}', '${item.name}')">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 5. Audio Player for Table Row
+    let activeAudio = null;
+    function playAudioRow(src) {
+      if (activeAudio) {
+        activeAudio.pause();
+      }
+      activeAudio = new Audio(src);
+      activeAudio.play().catch(e => showToast('Could not play audio', '⚠️'));
+    }
+
+    // 6. Image & Audio Previews
+    imageFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        previewImg.src = URL.createObjectURL(file);
+        previewImgName.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+        imagePreview.style.display = 'flex';
+      }
+    });
+
+    audioFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        previewAud.src = URL.createObjectURL(file);
+        audioPreview.style.display = 'flex';
+      }
+    });
+
+    function clearImageUpload() {
+      imageFileInput.value = '';
+      imagePreview.style.display = 'none';
+      previewImg.src = '';
+    }
+
+    function clearAudioUpload() {
+      audioFileInput.value = '';
+      audioPreview.style.display = 'none';
+      previewAud.src = '';
+    }
+
+    // 7. Tone mark helper buttons
+    function insertTone(char) {
+      const nameInput = document.getElementById('name');
+      const start = nameInput.selectionStart || nameInput.value.length;
+      const end = nameInput.selectionEnd || nameInput.value.length;
+      nameInput.value = nameInput.value.substring(0, start) + char + nameInput.value.substring(end);
+      nameInput.focus();
+      nameInput.setSelectionRange(start + char.length, start + char.length);
+    }
+
+    // 8. Submit Form (Create or Update)
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = entryIdInput.value;
+      const isEdit = Boolean(id);
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value);
+      formData.append('ipa', document.getElementById('ipa').value);
+      formData.append('pos', document.getElementById('pos').value);
+      formData.append('category', document.getElementById('category').value);
+      formData.append('letter', document.getElementById('letter').value);
+      formData.append('definition', document.getElementById('definition').value);
+      formData.append('exampleYoruba', document.getElementById('exampleYoruba').value);
+      formData.append('exampleEnglish', document.getElementById('exampleEnglish').value);
+
+      if (imageFileInput.files[0]) {
+        formData.append('image', imageFileInput.files[0]);
+      }
+      if (audioFileInput.files[0]) {
+        formData.append('audio', audioFileInput.files[0]);
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = isEdit ? 'Updating Entry...' : 'Uploading Entry...';
+
+      const url = isEdit ? `${API_URL}/${id}` : API_URL;
+      const method = isEdit ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          body: formData,
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast(isEdit ? 'Entry updated successfully!' : 'Medicinal entry uploaded!');
+          resetForm();
+          loadMedicinals();
+        } else {
+          showToast(json.message || 'Error saving entry', '❌');
+        }
+      } catch (err) {
+        showToast('Network error while saving. Is backend running?', '❌');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isEdit ? 'Update Medicinal Entry' : 'Save Medicinal Entry';
+      }
+    });
+
+    // 9. Edit Entry
+    function editEntry(id) {
+      const item = allMedicinals.find(i => (i.id || i._id) === id);
+      if (!item) return;
+
+      entryIdInput.value = item.id || item._id;
+      document.getElementById('name').value = item.name || '';
+      document.getElementById('ipa').value = item.ipa || '';
+      document.getElementById('pos').value = item.pos || 'n.';
+      document.getElementById('category').value = item.category || 'soup';
+      document.getElementById('letter').value = item.letter || '';
+      document.getElementById('definition').value = item.definition || '';
+      document.getElementById('exampleYoruba').value = item.exampleYoruba || '';
+      document.getElementById('exampleEnglish').value = item.exampleEnglish || '';
+
+      if (item.imageUrl) {
+        const imgSrc = item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE}${item.imageUrl}`;
+        previewImg.src = imgSrc;
+        previewImgName.textContent = 'Existing Image';
+        imagePreview.style.display = 'flex';
+      } else {
+        clearImageUpload();
+      }
+
+      if (item.audioUrl) {
+        const audSrc = item.audioUrl.startsWith('http') ? item.audioUrl : `${API_BASE}${item.audioUrl}`;
+        previewAud.src = audSrc;
+        audioPreview.style.display = 'flex';
+      } else {
+        clearAudioUpload();
+      }
+
+      formTitle.textContent = `Edit "${item.name}"`;
+      submitBtn.textContent = 'Update Medicinal Entry';
+      window.scrollTo({ top: form.offsetTop - 80, behavior: 'smooth' });
+    }
+
+    // 10. Delete Entry
+    async function deleteEntry(id, name) {
+      if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`"${name}" deleted successfully.`);
+          loadMedicinals();
+        } else {
+          showToast(json.message || 'Delete failed', '❌');
+        }
+      } catch (err) {
+        showToast('Network error while deleting.', '❌');
+      }
+    }
+
+    // 11. Reset Form
+    function resetForm() {
+      form.reset();
+      entryIdInput.value = '';
+      clearImageUpload();
+      clearAudioUpload();
+      formTitle.textContent = 'Upload New Medicinal';
+      submitBtn.textContent = 'Save Medicinal Entry';
+    }
+
+    resetBtn.addEventListener('click', resetForm);
+    searchInput.addEventListener('input', renderTable);
+    catFilter.addEventListener('change', renderTable);
+
+    // Toast helper
+    function showToast(msg, icon = '✅') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // Init
+    checkHealth();
+    loadCategories();
+    loadMedicinals();
+    setInterval(checkHealth, 10000);
+
+    // ============================================================
+    //  CATEGORY MANAGEMENT SYSTEM
+    // ============================================================
+
+    const CATEGORY_API = CATEGORIES_URL;
+
+    // Auto-generate slug from display name
+    document.getElementById('new-cat-name').addEventListener('input', function () {
+      const slugInput = document.getElementById('new-cat-value');
+      // Only auto-fill if the user hasn't manually typed a slug
+      if (!slugInput.dataset.manual) {
+        slugInput.value = this.value.toLowerCase()
+          .replace(/\s*[\/\(\)]\s*/g, '-')
+          .replace(/[^a-z0-9-]/g, '')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+    });
+    document.getElementById('new-cat-value').addEventListener('input', function () {
+      this.dataset.manual = 'true';
+    });
+    document.getElementById('new-cat-value').addEventListener('focus', function () {
+      this.dataset.manual = 'true';
+    });
+
+    // Load categories from API
+    async function loadCategories() {
+      try {
+        const res = await fetch(CATEGORY_API, { cache: 'no-store' });
+        const json = await res.json();
+        if (json.success) {
+          allCategories = json.data;
+          populateCategoryDropdowns();
+          renderCategoryList();
+          document.getElementById('stat-categories').textContent = allCategories.length;
+        }
+      } catch (err) {
+        console.log('[Categories] Could not load categories:', err.message);
+      }
+    }
+
+    // Populate the category <select> in the form and the filter dropdown
+    function populateCategoryDropdowns() {
+      const formSelect = document.getElementById('category');
+      const filterSelect = document.getElementById('admin-cat-filter');
+
+      // Remember current selections
+      const currentFormVal = formSelect.value;
+      const currentFilterVal = filterSelect.value;
+
+      // Populate form dropdown
+      formSelect.innerHTML = allCategories.map(cat =>
+        `<option value="${cat.value}">${cat.name}</option>`
+      ).join('');
+
+      // Restore selection if possible
+      if (currentFormVal && formSelect.querySelector(`option[value="${currentFormVal}"]`)) {
+        formSelect.value = currentFormVal;
+      }
+
+      // Populate filter dropdown (keep 'All' at top)
+      const filterOptions = `<option value="all">All Categories</option>` +
+        allCategories.map(cat =>
+          `<option value="${cat.value}">${cat.name}</option>`
+        ).join('');
+      filterSelect.innerHTML = filterOptions;
+
+      // Restore filter selection
+      if (currentFilterVal && filterSelect.querySelector(`option[value="${currentFilterVal}"]`)) {
+        filterSelect.value = currentFilterVal;
+      }
+    }
+
+    // Open / Close category manager panel
+    function openCategoryManager() {
+      document.getElementById('cat-overlay').classList.add('open');
+      document.getElementById('cat-panel').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      loadCategories();
+    }
+
+    function closeCategoryManager() {
+      document.getElementById('cat-overlay').classList.remove('open');
+      document.getElementById('cat-panel').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // Render the list of categories in the panel
+    function renderCategoryList() {
+      const container = document.getElementById('cat-list-container');
+
+      if (allCategories.length === 0) {
+        container.innerHTML = '<div class="cat-empty">No categories found. Add one above.</div>';
+        return;
+      }
+
+      // Count medicinals per category
+      const countMap = {};
+      allMedicinals.forEach(m => {
+        countMap[m.category] = (countMap[m.category] || 0) + 1;
+      });
+
+      container.innerHTML = allCategories.map(cat => {
+        const count = countMap[cat.value] || 0;
+        const catId = cat.id || cat._id;
+        return `
+          <div class="cat-item" id="cat-item-${catId}">
+            <div class="cat-item-display" style="display: flex; align-items: center; gap: 12px; width: 100%;">
+              <div class="cat-item-color" style="background: ${cat.color}"></div>
+              <div class="cat-item-info">
+                <div class="cat-item-name">${cat.name}</div>
+                <div class="cat-item-value">${cat.value}</div>
+              </div>
+              <div class="cat-item-count">${count} entries</div>
+              <div class="cat-item-actions">
+                <button title="Edit" onclick="startEditCategory('${catId}')">✏️</button>
+                <button class="cat-delete-btn" title="Delete" onclick="deleteCategory('${catId}', '${cat.name.replace(/'/g, "\\'")}')">🗑️</button>
+              </div>
+            </div>
+            <div class="cat-edit-form">
+              <div class="cat-edit-row">
+                <input type="text" id="edit-cat-name-${catId}" value="${cat.name}" placeholder="Display Name">
+                <input type="text" id="edit-cat-value-${catId}" value="${cat.value}" placeholder="Slug Value">
+              </div>
+              <div class="cat-edit-row">
+                <input type="color" id="edit-cat-color-${catId}" value="${cat.color}">
+                <div></div>
+              </div>
+              <div class="cat-edit-actions">
+                <button class="cat-cancel-btn" onclick="cancelEditCategory('${catId}')">Cancel</button>
+                <button class="cat-save-btn" onclick="saveEditCategory('${catId}')">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Add a new category
+    async function addCategory() {
+      const nameInput = document.getElementById('new-cat-name');
+      const valueInput = document.getElementById('new-cat-value');
+      const colorInput = document.getElementById('new-cat-color');
+
+      const name = nameInput.value.trim();
+      const value = valueInput.value.trim();
+      const color = colorInput.value;
+
+      if (!name) {
+        showToast('Please enter a category display name.', '⚠️');
+        nameInput.focus();
+        return;
+      }
+      if (!value) {
+        showToast('Please enter a slug value.', '⚠️');
+        valueInput.focus();
+        return;
+      }
+
+      try {
+        const res = await fetch(CATEGORY_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, value, color, order: allCategories.length }),
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast(`Category "${name}" created!`);
+          nameInput.value = '';
+          valueInput.value = '';
+          valueInput.dataset.manual = '';
+          colorInput.value = '#c4953a';
+          await loadCategories();
+        } else {
+          showToast(json.message || 'Failed to create category', '❌');
+        }
+      } catch (err) {
+        showToast('Network error. Is the backend running?', '❌');
+      }
+    }
+
+    // Start inline editing
+    function startEditCategory(catId) {
+      // Close any other open edits
+      document.querySelectorAll('.cat-item.editing').forEach(el => el.classList.remove('editing'));
+      const item = document.getElementById(`cat-item-${catId}`);
+      if (item) item.classList.add('editing');
+    }
+
+    function cancelEditCategory(catId) {
+      const item = document.getElementById(`cat-item-${catId}`);
+      if (item) item.classList.remove('editing');
+    }
+
+    // Save edited category
+    async function saveEditCategory(catId) {
+      const name = document.getElementById(`edit-cat-name-${catId}`).value.trim();
+      const value = document.getElementById(`edit-cat-value-${catId}`).value.trim();
+      const color = document.getElementById(`edit-cat-color-${catId}`).value;
+
+      if (!name || !value) {
+        showToast('Name and value are required.', '⚠️');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${CATEGORY_API}/${catId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, value, color }),
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast(`Category updated successfully!`);
+          await loadCategories();
+          loadMedicinals(); // Refresh in case slug changed
+        } else {
+          showToast(json.message || 'Failed to update', '❌');
+        }
+      } catch (err) {
+        showToast('Network error while updating.', '❌');
+      }
+    }
+
+    // Delete a category
+    async function deleteCategory(catId, catName) {
+      if (!confirm(`Delete category "${catName}"?\n\nNote: Entries using this category will keep their current value but it won't appear in dropdowns.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${CATEGORY_API}/${catId}`, { method: 'DELETE' });
+        const json = await res.json();
+
+        if (json.success) {
+          showToast(`Category "${catName}" deleted.`);
+          await loadCategories();
+        } else {
+          showToast(json.message || 'Delete failed', '❌');
+        }
+      } catch (err) {
+        showToast('Network error while deleting.', '❌');
+      }
+    }
+
+    // Dynamic badge color helper — uses category color from allCategories
+    function getCategoryBadgeStyle(categoryValue) {
+      const cat = allCategories.find(c => c.value === categoryValue);
+      if (!cat) return '';
+      // Convert hex to rgba for background
+      const hex = cat.color;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `background: rgba(${r}, ${g}, ${b}, 0.2); color: ${hex};`;
+    }
+  </script>
+</body>
+</html>
