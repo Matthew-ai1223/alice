@@ -4,6 +4,12 @@
   "installCommand": "npm install && npm --prefix server install",
   "buildCommand": "npm --prefix server run build && node scripts/prepare-public.mjs",
   "outputDirectory": "public",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "server/{dist,data}/**",
+      "maxDuration": 30
+    }
+  },
   "cleanUrls": true,
   "rewrites": [
     {

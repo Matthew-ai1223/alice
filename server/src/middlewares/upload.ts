@@ -2,31 +2,43 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Root directory for uploads
-const UPLOAD_ROOT = path.resolve(process.cwd(), 'uploads');
+const isVercel = Boolean(process.env.VERCEL);
+
+// Vercel only allows writes under /tmp
+const UPLOAD_ROOT = isVercel
+  ? path.join('/tmp', 'uploads')
+  : path.resolve(process.cwd(), 'uploads');
 const IMAGES_DIR = path.join(UPLOAD_ROOT, 'images');
 const AUDIO_DIR = path.join(UPLOAD_ROOT, 'audio');
 
-// Ensure directories exist
-[UPLOAD_ROOT, IMAGES_DIR, AUDIO_DIR].forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+try {
+  [UPLOAD_ROOT, IMAGES_DIR, AUDIO_DIR].forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+} catch (err) {
+  console.warn('[Uploads Notice] Could not create upload directories:', err);
+}
 
-// Configure disk storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (file.fieldname === 'image') {
-      cb(null, IMAGES_DIR);
-    } else if (file.fieldname === 'audio') {
-      cb(null, AUDIO_DIR);
-    } else {
-      cb(null, UPLOAD_ROOT);
+    try {
+      const dest =
+        file.fieldname === 'image'
+          ? IMAGES_DIR
+          : file.fieldname === 'audio'
+            ? AUDIO_DIR
+            : UPLOAD_ROOT;
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+      }
+      cb(null, dest);
+    } catch (err) {
+      cb(err as Error, UPLOAD_ROOT);
     }
   },
   filename: (req, file, cb) => {
-    // Generate safe clean filename: fieldname-timestamp-random.ext
     const ext = path.extname(file.originalname).toLowerCase();
     const cleanName = path
       .basename(file.originalname, ext)
@@ -37,7 +49,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter for image and audio mime types
 const fileFilter = (
   req: any,
   file: Express.Multer.File,
