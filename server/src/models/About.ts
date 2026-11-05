@@ -1,0 +1,46 @@
+import mongoose, { Schema, Document } from 'mongoose';
+import type { AboutContent } from '../data/aboutContent.js';
+
+export interface IAbout extends Document, AboutContent {}
+
+const AboutSchema: Schema = new Schema(
+  {
+    key: { type: String, default: 'about', unique: true, index: true },
+    portraitUrl: { type: String, default: '' },
+    badgeName: { type: String, default: '' },
+    badgeRole: { type: String, default: '' },
+    pillBadge: { type: String, default: '' },
+    heroTitle: { type: String, default: '' },
+    role: { type: String, default: '' },
+    lead: { type: String, default: '' },
+    whatsappNumber: { type: String, default: '' },
+    heroWhatsappMessage: { type: String, default: '' },
+    contactWhatsappMessage: { type: String, default: '' },
+    navWhatsappMessage: { type: String, default: '' },
+    pillarsTitle: { type: String, default: '' },
+    pillarsSubtitle: { type: String, default: '' },
+    pillar1Title: { type: String, default: '' },
+    pillar1Text: { type: String, default: '' },
+    pillar2Title: { type: String, default: '' },
+    pillar2Text: { type: String, default: '' },
+    pillar3Title: { type: String, default: '' },
+    pillar3Text: { type: String, default: '' },
+    storyTitle: { type: String, default: '' },
+    storyP1: { type: String, default: '' },
+    quote: { type: String, default: '' },
+    quoteCite: { type: String, default: '' },
+    storyP2: { type: String, default: '' },
+    storyP3: { type: String, default: '' },
+    contactTitle: { type: String, default: '' },
+    contactIntro: { type: String, default: '' },
+    contactItem1: { type: String, default: '' },
+    contactItem2: { type: String, default: '' },
+    contactItem3: { type: String, default: '' },
+    waBoxTitle: { type: String, default: '' },
+    waBoxText: { type: String, default: '' },
+    waBoxButton: { type: String, default: '' },
+  },
+  { timestamps: true }
+);
+
+export const About = mongoose.model<IAbout>('About', AboutSchema);

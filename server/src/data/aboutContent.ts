@@ -1,0 +1,71 @@
+export interface AboutContent {
+  portraitUrl: string;
+  badgeName: string;
+  badgeRole: string;
+  pillBadge: string;
+  heroTitle: string;
+  role: string;
+  lead: string;
+  whatsappNumber: string;
+  heroWhatsappMessage: string;
+  contactWhatsappMessage: string;
+  navWhatsappMessage: string;
+  pillarsTitle: string;
+  pillarsSubtitle: string;
+  pillar1Title: string;
+  pillar1Text: string;
+  pillar2Title: string;
+  pillar2Text: string;
+  pillar3Title: string;
+  pillar3Text: string;
+  storyTitle: string;
+  storyP1: string;
+  quote: string;
+  quoteCite: string;
+  storyP2: string;
+  storyP3: string;
+  contactTitle: string;
+  contactIntro: string;
+  contactItem1: string;
+  contactItem2: string;
+  contactItem3: string;
+  waBoxTitle: string;
+  waBoxText: string;
+  waBoxButton: string;
+}
+
+export const DEFAULT_ABOUT: AboutContent = {
+  portraitUrl: 'images/alice.jpg',
+  badgeName: 'Adeniyi Alice',
+  badgeRole: 'Lexicographer & Researcher',
+  pillBadge: 'Linguist & Lexicographer',
+  heroTitle: 'Preserving Indigenous Yorùbá Botanical & Medicinal Heritage',
+  role: 'Researcher & Compiler · LIN 401 Project Lead',
+  lead: 'Welcome! I am Adeniyi Alice, a dedicated Yorùbá linguist and lexicographer. My research focuses on the preservation, documentation, and digital accessibility of traditional Yorùbá medicinal vocabulary, orthography, and native oral pronunciation.',
+  whatsappNumber: '2349020868575',
+  heroWhatsappMessage: 'Hello Adeniyi Alice, I am interested in your Yorùbá language and medicinal lexicography services',
+  contactWhatsappMessage: 'Hello Adeniyi Alice, I am contacting you via your About page',
+  navWhatsappMessage: 'Hello Adeniyi Alice, I would like to get in touch with you',
+  pillarsTitle: 'Research & Lexicographical Focus',
+  pillarsSubtitle: 'Bridging traditional indigenous knowledge with systematic modern linguistic methodology.',
+  pillar1Title: 'Ethnobotanical Documentation',
+  pillar1Text: 'Curating and standardizing the names, cultural contexts, preparations, and culinary-medicinal usages of indigenous Yorùbá herbs, soups, plants, and natural remedies.',
+  pillar2Title: 'Tonal Orthography & IPA',
+  pillar2Text: 'Precision tone-marking (Àmì Ohùn) and International Phonetic Alphabet (IPA) transcriptions to preserve semantic nuances and acoustic distinction in spoken Yorùbá.',
+  pillar3Title: 'Audio Pronunciation Archive',
+  pillar3Text: 'Recording native speakers to provide accurate auditory references for linguists, students, herbalists, and diaspora communities worldwide.',
+  storyTitle: 'About the Digital Dictionary Project',
+  storyP1: 'The Digital Dictionary of Yorùbá Traditional Medicinal Vocabulary and Its Applications was developed under the academic framework of LIN 401: Lexicography and Translation (2024/2025 Session) under the supervision of Prof. Demola Lewis.',
+  quote: 'Language is the deepest living vessel of ancestral medical wisdom. When we document traditional vocabulary accurately, we safeguard indigenous science for future generations.',
+  quoteCite: '— Adeniyi Alice',
+  storyP2: 'Each entry in our corpus features verified tone-marked headwords, phonetics, grammatical categorization, English translations, contextual example sentences, photographic illustrations, and native speaker audio recordings.',
+  storyP3: 'Beyond academic lexicography, I provide professional linguistic consultancy, including translation, audio transcription, morphological tagging, and educational material compilation for Yorùbá language learners and researchers.',
+  contactTitle: 'Get in Touch',
+  contactIntro: 'Have inquiries regarding Yorùbá translation, lexicographical consulting, language projects, or traditional botanical vocabulary? Let\'s connect directly.',
+  contactItem1: 'Fast WhatsApp Responses',
+  contactItem2: 'Translation & Lexicography Consulting',
+  contactItem3: 'Available for Research Collaborations',
+  waBoxTitle: 'Direct WhatsApp Chat',
+  waBoxText: 'Click below to open a direct conversation on WhatsApp with Adeniyi Alice.',
+  waBoxButton: 'Chat on WhatsApp Now',
+};

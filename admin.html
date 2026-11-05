@@ -84,6 +84,72 @@
       margin: 0 auto;
       padding: 32px 24px;
     }
+    .admin-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .admin-tab {
+      background: #142044;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #a0aed4;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .admin-tab.active {
+      background: #c4953a;
+      border-color: #c4953a;
+      color: #fff;
+    }
+    .admin-page { display: none; }
+    .admin-page.active { display: block; }
+    .about-editor {
+      background: #142044;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .about-editor h2 {
+      color: #fff;
+      font-size: 1.2rem;
+      margin: 0 0 8px;
+    }
+    .about-editor-intro {
+      color: #a0aed4;
+      font-size: 0.88rem;
+      margin-bottom: 24px;
+    }
+    .about-section-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 18px;
+      background: #0f1833;
+    }
+    .about-section-card h3 {
+      color: #c4953a;
+      font-size: 0.95rem;
+      margin: 0 0 14px;
+    }
+    .about-editor .form-row-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .about-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .about-actions .submit-btn {
+      width: auto;
+      padding: 12px 22px;
+    }
     .metrics-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -800,13 +866,21 @@
     </div>
     <div class="admin-nav-links">
       <a href="index.html">← Client Dictionary</a>
-      <a href="about.html">About Page</a>
+      <a href="about.html">View About</a>
+      <a href="#about" id="admin-about-tab-link">Edit About</a>
       <a href="/api/health" target="_blank" style="color: #c4953a;">API Health ↗</a>
     </div>
   </header>
 
   <!-- ====== Main Container ====== -->
   <main class="admin-container">
+
+    <div class="admin-tabs">
+      <button type="button" class="admin-tab active" data-tab="entries">Dictionary entries</button>
+      <button type="button" class="admin-tab" data-tab="about">About page</button>
+    </div>
+
+    <div id="panel-entries" class="admin-page active">
 
     <!-- Metrics Row -->
     <section class="metrics-row">
@@ -1023,6 +1097,194 @@
       </section>
 
     </div>
+    </div>
+
+    <div id="panel-about" class="admin-page">
+      <section class="about-editor">
+        <h2>Edit About page</h2>
+        <p class="about-editor-intro">Change any field below. Saved text appears on <a href="about.html" style="color:#c4953a;">about.html</a> after refresh.</p>
+
+        <form id="about-form">
+          <div class="about-section-card">
+            <h3>Portrait</h3>
+            <div class="form-group">
+              <label>Current photo</label>
+              <div id="about-portrait-preview" class="preview-box" style="display:flex;">
+                <img id="about-portrait-img" src="images/alice.jpg" alt="Portrait preview">
+                <span id="about-portrait-name" style="font-size: 0.8rem;">images/alice.jpg</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="about-portrait-file">Replace portrait</label>
+              <input type="file" id="about-portrait-file" class="form-control" accept="image/*">
+            </div>
+          </div>
+
+          <div class="about-section-card">
+            <h3>Hero</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="about-badgeName">Badge name</label>
+                <input type="text" id="about-badgeName" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="about-badgeRole">Badge role</label>
+                <input type="text" id="about-badgeRole" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="about-pillBadge">Pill badge</label>
+              <input type="text" id="about-pillBadge" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-heroTitle">Headline</label>
+              <input type="text" id="about-heroTitle" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-role">Role line</label>
+              <input type="text" id="about-role" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-lead">Lead paragraph</label>
+              <textarea id="about-lead" class="form-control" rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="about-section-card">
+            <h3>WhatsApp</h3>
+            <div class="form-group">
+              <label for="about-whatsappNumber">Phone number (with country code, no +)</label>
+              <input type="text" id="about-whatsappNumber" class="form-control" placeholder="2349020868575">
+            </div>
+            <div class="form-group">
+              <label for="about-navWhatsappMessage">Nav button message</label>
+              <input type="text" id="about-navWhatsappMessage" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-heroWhatsappMessage">Hero button message</label>
+              <input type="text" id="about-heroWhatsappMessage" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-contactWhatsappMessage">Contact box message</label>
+              <input type="text" id="about-contactWhatsappMessage" class="form-control">
+            </div>
+          </div>
+
+          <div class="about-section-card">
+            <h3>Research pillars</h3>
+            <div class="form-group">
+              <label for="about-pillarsTitle">Section title</label>
+              <input type="text" id="about-pillarsTitle" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-pillarsSubtitle">Section subtitle</label>
+              <input type="text" id="about-pillarsSubtitle" class="form-control">
+            </div>
+            <div class="form-row-3">
+              <div>
+                <div class="form-group">
+                  <label for="about-pillar1Title">Pillar 1 title</label>
+                  <input type="text" id="about-pillar1Title" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="about-pillar1Text">Pillar 1 text</label>
+                  <textarea id="about-pillar1Text" class="form-control" rows="4"></textarea>
+                </div>
+              </div>
+              <div>
+                <div class="form-group">
+                  <label for="about-pillar2Title">Pillar 2 title</label>
+                  <input type="text" id="about-pillar2Title" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="about-pillar2Text">Pillar 2 text</label>
+                  <textarea id="about-pillar2Text" class="form-control" rows="4"></textarea>
+                </div>
+              </div>
+              <div>
+                <div class="form-group">
+                  <label for="about-pillar3Title">Pillar 3 title</label>
+                  <input type="text" id="about-pillar3Title" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="about-pillar3Text">Pillar 3 text</label>
+                  <textarea id="about-pillar3Text" class="form-control" rows="4"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-section-card">
+            <h3>Project story</h3>
+            <div class="form-group">
+              <label for="about-storyTitle">Story title</label>
+              <input type="text" id="about-storyTitle" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-storyP1">First paragraph</label>
+              <textarea id="about-storyP1" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="about-quote">Quote</label>
+              <textarea id="about-quote" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="about-quoteCite">Quote credit</label>
+              <input type="text" id="about-quoteCite" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-storyP2">Second paragraph</label>
+              <textarea id="about-storyP2" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="about-storyP3">Third paragraph</label>
+              <textarea id="about-storyP3" class="form-control" rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="about-section-card">
+            <h3>Contact</h3>
+            <div class="form-group">
+              <label for="about-contactTitle">Contact title</label>
+              <input type="text" id="about-contactTitle" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-contactIntro">Contact intro</label>
+              <textarea id="about-contactIntro" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="about-contactItem1">Channel 1</label>
+              <input type="text" id="about-contactItem1" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-contactItem2">Channel 2</label>
+              <input type="text" id="about-contactItem2" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-contactItem3">Channel 3</label>
+              <input type="text" id="about-contactItem3" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-waBoxTitle">WhatsApp box title</label>
+              <input type="text" id="about-waBoxTitle" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="about-waBoxText">WhatsApp box text</label>
+              <textarea id="about-waBoxText" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="about-waBoxButton">WhatsApp button label</label>
+              <input type="text" id="about-waBoxButton" class="form-control">
+            </div>
+          </div>
+
+          <div class="about-actions">
+            <button type="submit" class="submit-btn" id="about-save-btn">Save About page</button>
+            <a href="about.html" target="_blank" class="reset-btn" style="display:inline-flex;align-items:center;">Preview About page</a>
+          </div>
+        </form>
+      </section>
+    </div>
   </main>
 
   <!-- Notification Toast -->
@@ -1041,6 +1303,7 @@
       return '';
     })();
     const API_URL = `${API_BASE}/api/medicinals`;
+    const ABOUT_URL = `${API_BASE}/api/about`;
     const HEALTH_URL = `${API_BASE}/api/health`;
 
     let allMedicinals = [];
@@ -1419,10 +1682,125 @@
 
     document.getElementById('add-extra-field-btn').addEventListener('click', () => addExtraField());
 
+    const ABOUT_FIELDS = [
+      'badgeName', 'badgeRole', 'pillBadge', 'heroTitle', 'role', 'lead',
+      'whatsappNumber', 'navWhatsappMessage', 'heroWhatsappMessage', 'contactWhatsappMessage',
+      'pillarsTitle', 'pillarsSubtitle',
+      'pillar1Title', 'pillar1Text', 'pillar2Title', 'pillar2Text', 'pillar3Title', 'pillar3Text',
+      'storyTitle', 'storyP1', 'quote', 'quoteCite', 'storyP2', 'storyP3',
+      'contactTitle', 'contactIntro', 'contactItem1', 'contactItem2', 'contactItem3',
+      'waBoxTitle', 'waBoxText', 'waBoxButton'
+    ];
+
+    function resolveMediaUrl(url) {
+      if (!url) return 'images/alice.jpg';
+      if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+      return `${API_BASE}${url.startsWith('/') ? url : '/' + url}`;
+    }
+
+    function fillAboutForm(data) {
+      ABOUT_FIELDS.forEach((key) => {
+        const el = document.getElementById(`about-${key}`);
+        if (el) el.value = data[key] || '';
+      });
+      const img = document.getElementById('about-portrait-img');
+      const name = document.getElementById('about-portrait-name');
+      const src = resolveMediaUrl(data.portraitUrl || 'images/alice.jpg');
+      img.src = src;
+      name.textContent = data.portraitUrl || 'images/alice.jpg';
+    }
+
+    async function loadAboutForm() {
+      try {
+        const res = await fetch(ABOUT_URL, { cache: 'no-store' });
+        const json = await res.json();
+        if (json.success) fillAboutForm(json.data);
+      } catch (err) {
+        showToast('Could not load About page content.', '⚠️');
+      }
+    }
+
+    function showAdminTab(name) {
+      document.querySelectorAll('.admin-tab').forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.tab === name);
+      });
+      document.querySelectorAll('.admin-page').forEach((page) => {
+        page.classList.toggle('active', page.id === `panel-${name}`);
+      });
+      if (name === 'about') loadAboutForm();
+      history.replaceState(null, '', name === 'about' ? '#about' : '#entries');
+    }
+
+    document.querySelectorAll('.admin-tab').forEach((tab) => {
+      tab.addEventListener('click', () => showAdminTab(tab.dataset.tab));
+    });
+    const aboutTabLink = document.getElementById('admin-about-tab-link');
+    if (aboutTabLink) {
+      aboutTabLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showAdminTab('about');
+      });
+    }
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#about') showAdminTab('about');
+      if (window.location.hash === '#entries') showAdminTab('entries');
+    });
+
+    document.getElementById('about-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {};
+      ABOUT_FIELDS.forEach((key) => {
+        payload[key] = document.getElementById(`about-${key}`).value;
+      });
+
+      const saveBtn = document.getElementById('about-save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        const portraitFile = document.getElementById('about-portrait-file').files[0];
+        if (portraitFile) {
+          const portraitData = new FormData();
+          portraitData.append('image', portraitFile);
+          const portraitRes = await fetch(`${ABOUT_URL}/portrait`, {
+            method: 'POST',
+            body: portraitData,
+          });
+          const portraitJson = await portraitRes.json();
+          if (!portraitJson.success) throw new Error(portraitJson.message || 'Portrait upload failed');
+          payload.portraitUrl = portraitJson.data.portraitUrl;
+        }
+
+        const res = await fetch(ABOUT_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message || 'Save failed');
+        fillAboutForm(json.data);
+        document.getElementById('about-portrait-file').value = '';
+        showToast('About page saved.');
+      } catch (err) {
+        showToast(err.message || 'Could not save About page.', '❌');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save About page';
+      }
+    });
+
+    document.getElementById('about-portrait-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('about-portrait-img').src = URL.createObjectURL(file);
+      document.getElementById('about-portrait-name').textContent = file.name;
+    });
+
     // Init
     checkHealth();
     loadMedicinals();
     setInterval(checkHealth, 10000);
+    if (window.location.hash === '#about') showAdminTab('about');
   </script>
 </body>
 </html>
