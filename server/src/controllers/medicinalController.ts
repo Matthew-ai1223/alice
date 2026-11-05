@@ -23,6 +23,11 @@ function isDbConnected(): boolean {
 }
 
 // Local file-backed storage helpers
+interface ExtraField {
+  label: string;
+  value: string;
+}
+
 interface LocalEntry {
   _id: string;
   id: string;
@@ -33,6 +38,7 @@ interface LocalEntry {
   definition: string;
   exampleYoruba: string;
   exampleEnglish: string;
+  extraFields: ExtraField[];
   imageUrl: string | null;
   audioUrl: string | null;
   hasAudio: boolean;
@@ -40,6 +46,25 @@ interface LocalEntry {
   letter: string;
   createdAt: string;
   updatedAt: string;
+}
+
+function parseExtraFields(raw: unknown): ExtraField[] {
+  if (!raw) return [];
+  let parsed: unknown = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map((field) => ({
+      label: String(field?.label || '').trim(),
+      value: String(field?.value || '').trim(),
+    }))
+    .filter((field) => field.label && field.value);
 }
 
 function getLocalData(): LocalEntry[] {
@@ -67,6 +92,7 @@ function getLocalData(): LocalEntry[] {
       id: slug,
       ...item,
       audioUrl: null,
+      extraFields: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -151,6 +177,8 @@ export async function getAllMedicinals(req: Request, res: Response): Promise<voi
           { ipa: regex },
           { exampleYoruba: regex },
           { exampleEnglish: regex },
+          { 'extraFields.label': regex },
+          { 'extraFields.value': regex },
         ];
       }
 
@@ -191,7 +219,12 @@ export async function getAllMedicinals(req: Request, res: Response): Promise<voi
           item.definition.toLowerCase().includes(q) ||
           (item.ipa && item.ipa.toLowerCase().includes(q)) ||
           (item.exampleYoruba && item.exampleYoruba.toLowerCase().includes(q)) ||
-          (item.exampleEnglish && item.exampleEnglish.toLowerCase().includes(q))
+          (item.exampleEnglish && item.exampleEnglish.toLowerCase().includes(q)) ||
+          (item.extraFields || []).some(
+            (field) =>
+              field.label.toLowerCase().includes(q) ||
+              field.value.toLowerCase().includes(q)
+          )
       );
     }
 
@@ -246,20 +279,22 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
       name,
       ipa,
       pos,
-      category,
       definition,
       exampleYoruba,
       exampleEnglish,
+      extraFields,
       letter,
     } = req.body;
 
-    if (!name || !category || !definition) {
+    if (!name || !definition) {
       res.status(400).json({
         success: false,
-        message: 'Name, Category, and Definition are required fields.',
+        message: 'Name and Definition are required fields.',
       });
       return;
     }
+
+    const parsedExtraFields = parseExtraFields(extraFields);
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
     let imageUrl: string | null = null;
@@ -279,10 +314,11 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
         name: name.trim(),
         ipa: (ipa || '').trim(),
         pos: (pos || 'n.').trim(),
-        category: category.trim().toLowerCase(),
+        category: '',
         definition: definition.trim(),
         exampleYoruba: (exampleYoruba || '').trim(),
         exampleEnglish: (exampleEnglish || '').trim(),
+        extraFields: parsedExtraFields,
         letter: determinedLetter,
         imageUrl,
         audioUrl,
@@ -312,10 +348,11 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
       name: name.trim(),
       ipa: (ipa || '').trim(),
       pos: (pos || 'n.').trim(),
-      category: category.trim().toLowerCase(),
+      category: '',
       definition: definition.trim(),
       exampleYoruba: (exampleYoruba || '').trim(),
       exampleEnglish: (exampleEnglish || '').trim(),
+      extraFields: parsedExtraFields,
       letter: determinedLetter,
       imageUrl,
       audioUrl,
@@ -350,14 +387,16 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
       name,
       ipa,
       pos,
-      category,
       definition,
       exampleYoruba,
       exampleEnglish,
+      extraFields,
       letter,
       removeImage,
       removeAudio,
     } = req.body;
+
+    const parsedExtraFields = extraFields !== undefined ? parseExtraFields(extraFields) : undefined;
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
 
@@ -371,10 +410,10 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
       if (name) item.name = name.trim();
       if (ipa !== undefined) item.ipa = ipa.trim();
       if (pos !== undefined) item.pos = pos.trim();
-      if (category) item.category = category.trim().toLowerCase();
       if (definition) item.definition = definition.trim();
       if (exampleYoruba !== undefined) item.exampleYoruba = exampleYoruba.trim();
       if (exampleEnglish !== undefined) item.exampleEnglish = exampleEnglish.trim();
+      if (parsedExtraFields) item.extraFields = parsedExtraFields;
       if (letter) item.letter = letter.trim();
       else if (name) item.letter = getLetterGroup(name);
 
@@ -434,10 +473,10 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
     if (name) item.name = name.trim();
     if (ipa !== undefined) item.ipa = ipa.trim();
     if (pos !== undefined) item.pos = pos.trim();
-    if (category) item.category = category.trim().toLowerCase();
     if (definition) item.definition = definition.trim();
     if (exampleYoruba !== undefined) item.exampleYoruba = exampleYoruba.trim();
     if (exampleEnglish !== undefined) item.exampleEnglish = exampleEnglish.trim();
+    if (parsedExtraFields) item.extraFields = parsedExtraFields;
     if (letter) item.letter = letter.trim();
     else if (name) item.letter = getLetterGroup(name);
 

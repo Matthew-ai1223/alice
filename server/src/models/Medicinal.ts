@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface IExtraField {
+  label: string;
+  value: string;
+}
+
 export interface IMedicinal extends Document {
   name: string;
   ipa: string;
@@ -8,6 +13,7 @@ export interface IMedicinal extends Document {
   definition: string;
   exampleYoruba: string;
   exampleEnglish: string;
+  extraFields: IExtraField[];
   imageUrl?: string | null;
   audioUrl?: string | null;
   hasAudio: boolean;
@@ -37,10 +43,19 @@ const MedicinalSchema: Schema = new Schema(
     },
     category: {
       type: String,
-      required: [true, 'Category is required'],
       trim: true,
       lowercase: true,
-      index: true,
+      default: '',
+    },
+    extraFields: {
+      type: [
+        {
+          label: { type: String, trim: true },
+          value: { type: String, trim: true },
+          _id: false,
+        },
+      ],
+      default: [],
     },
     definition: {
       type: String,

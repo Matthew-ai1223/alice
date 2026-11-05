@@ -321,13 +321,39 @@
       transform: translateY(-50%);
       color: #7080bc;
     }
-    .category-filter-select {
-      background: #0f1833;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
+    .extra-fields-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .extra-fields-header label {
+      margin-bottom: 0;
+    }
+    .extra-fields-hint {
+      font-size: 0.75rem;
+      color: #7080bc;
+      margin: 0 0 10px;
+    }
+    .extra-field-row {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr auto;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .add-field-btn {
+      background: rgba(196, 149, 58, 0.15);
+      border: 1px solid rgba(196, 149, 58, 0.4);
+      color: #c4953a;
+      padding: 6px 12px;
       border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 0.88rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .add-field-btn:hover {
+      background: rgba(196, 149, 58, 0.28);
     }
     .medicinal-table {
       width: 100%;
@@ -812,21 +838,7 @@
           <p>Letters Covered</p>
         </div>
       </div>
-      <div class="metric-card" style="cursor: pointer;" onclick="openCategoryManager()" title="Click to manage categories">
-        <div class="metric-icon">🏷️</div>
-        <div class="metric-info">
-          <h3 id="stat-categories">0</h3>
-          <p>Categories</p>
-        </div>
-      </div>
     </section>
-
-    <!-- Category Manager Toggle Button -->
-    <div style="margin-bottom: 24px; display: flex; justify-content: flex-end;">
-      <button class="cat-manager-toggle" onclick="openCategoryManager()">
-        🏷️ Manage Categories
-      </button>
-    </div>
 
     <!-- Layout Grid: Left Form, Right Table -->
     <div class="admin-grid">
@@ -834,7 +846,7 @@
       <!-- Upload / Edit Form -->
       <section class="form-card">
         <div class="form-header">
-          <h2 id="form-title">Upload New Medicinal</h2>
+          <h2 id="form-title">New dictionary entry</h2>
           <button class="reset-btn" id="reset-form-btn">Clear / New</button>
         </div>
 
@@ -885,13 +897,6 @@
           </div>
 
           <div class="form-row">
-            <!-- Category (Dynamically loaded from API) -->
-            <div class="form-group">
-              <label for="category">Category *</label>
-              <select id="category" class="form-control" required>
-                <option value="">Loading categories...</option>
-              </select>
-            </div>
             <!-- Letter Cluster -->
             <div class="form-group">
               <label for="letter">Alphabet Group</label>
@@ -933,6 +938,15 @@
           <div class="form-group">
             <label for="exampleEnglish">Example Translation (English)</label>
             <input type="text" id="exampleEnglish" class="form-control" placeholder="e.g. Egusi soup is my favourite">
+          </div>
+
+          <div class="form-group extra-fields-block">
+            <div class="extra-fields-header">
+              <label>Additional fields</label>
+              <button type="button" class="add-field-btn" id="add-extra-field-btn">+ Add field</button>
+            </div>
+            <p class="extra-fields-hint">Optional. Add botanical name, preparation, habitat, or any other detail this entry needs.</p>
+            <div id="extra-fields-list"></div>
           </div>
 
           <!-- Image Upload -->
@@ -984,10 +998,6 @@
             </svg>
             <input type="text" id="admin-search" placeholder="Filter by Yorùbá name, English or IPA...">
           </div>
-          <select id="admin-cat-filter" class="category-filter-select">
-            <option value="all">All Categories</option>
-            <!-- Dynamically populated -->
-          </select>
         </div>
 
         <div style="overflow-x: auto;">
@@ -996,7 +1006,6 @@
               <tr>
                 <th style="width: 50px;">Media</th>
                 <th>Yorùbá Name</th>
-                <th>Category</th>
                 <th>Definition</th>
                 <th style="width: 80px;">Audio</th>
                 <th style="width: 90px; text-align: right;">Actions</th>
@@ -1004,7 +1013,7 @@
             </thead>
             <tbody id="entries-tbody">
               <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #7080bc;">
+                <td colspan="5" style="text-align: center; padding: 40px; color: #7080bc;">
                   Connecting to backend server...
                 </td>
               </tr>
@@ -1015,40 +1024,6 @@
 
     </div>
   </main>
-
-  <!-- ====== Category Manager Side Panel ====== -->
-  <div class="cat-overlay" id="cat-overlay" onclick="closeCategoryManager()"></div>
-  <div class="cat-panel" id="cat-panel">
-    <div class="cat-panel-header">
-      <h2>🏷️ Category Manager</h2>
-      <button class="cat-panel-close" onclick="closeCategoryManager()">✕</button>
-    </div>
-
-    <!-- Add New Category Form -->
-    <div class="cat-add-form">
-      <h3>Add New Category</h3>
-      <div class="cat-add-row">
-        <div class="form-group">
-          <label>Display Name</label>
-          <input type="text" id="new-cat-name" placeholder='e.g. Herb / Botanical Flora'>
-        </div>
-        <div class="form-group">
-          <label>Slug Value</label>
-          <input type="text" id="new-cat-value" placeholder='e.g. herb'>
-        </div>
-        <div class="form-group">
-          <label>Color</label>
-          <input type="color" id="new-cat-color" value="#c4953a">
-        </div>
-        <button class="cat-add-btn" onclick="addCategory()">+ Add</button>
-      </div>
-    </div>
-
-    <!-- Category List -->
-    <div class="cat-list-container" id="cat-list-container">
-      <div class="cat-empty">Loading categories...</div>
-    </div>
-  </div>
 
   <!-- Notification Toast -->
   <div id="toast" class="toast">
@@ -1066,11 +1041,9 @@
       return '';
     })();
     const API_URL = `${API_BASE}/api/medicinals`;
-    const CATEGORIES_URL = `${API_BASE}/api/categories`;
     const HEALTH_URL = `${API_BASE}/api/health`;
 
     let allMedicinals = [];
-    let allCategories = [];
     let isBackendOnline = false;
 
     // Elements
@@ -1091,7 +1064,6 @@
 
     const entriesTbody = document.getElementById('entries-tbody');
     const searchInput = document.getElementById('admin-search');
-    const catFilter = document.getElementById('admin-cat-filter');
 
     const connStatus = document.getElementById('connection-status');
     const statusText = document.getElementById('status-text');
@@ -1133,7 +1105,7 @@
 
     // 3. Fetch Medicinals
     async function loadMedicinals() {
-      entriesTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #7080bc;">Loading entries...</td></tr>';
+      entriesTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #7080bc;">Loading entries...</td></tr>';
       
       try {
         const res = await fetch(API_URL, { cache: 'no-store' });
@@ -1148,7 +1120,7 @@
       } catch (err) {
         entriesTbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align: center; padding: 40px; color: #e74c3c;">
+            <td colspan="5" style="text-align: center; padding: 40px; color: #e74c3c;">
               <strong>⚠️ Unable to connect to Backend Server.</strong><br>
               <span style="font-size: 0.8rem; color: #a0aed4;">
                 Please ensure you started the backend: <code>cd server && npm run dev</code><br>
@@ -1163,21 +1135,23 @@
     // 4. Render Table with Search and Filter
     function renderTable() {
       const q = searchInput.value.toLowerCase().trim();
-      const cat = catFilter.value;
 
       let filtered = allMedicinals.filter(item => {
-        const matchCat = cat === 'all' || item.category === cat;
-        const matchSearch = !q ||
+        const extraText = (item.extraFields || [])
+          .map((field) => `${field.label} ${field.value}`)
+          .join(' ')
+          .toLowerCase();
+        return !q ||
           item.name.toLowerCase().includes(q) ||
           (item.ipa && item.ipa.toLowerCase().includes(q)) ||
-          item.definition.toLowerCase().includes(q);
-        return matchCat && matchSearch;
+          item.definition.toLowerCase().includes(q) ||
+          extraText.includes(q);
       });
 
       if (filtered.length === 0) {
         entriesTbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align: center; padding: 32px; color: #7080bc;">
+            <td colspan="5" style="text-align: center; padding: 32px; color: #7080bc;">
               No entries matching your filter criteria.
             </td>
           </tr>
@@ -1212,7 +1186,6 @@
               <strong style="color: #fff; font-size: 0.95rem;">${item.name}</strong>
               <div style="font-size: 0.78rem; color: #c4953a;">${item.ipa ? `[${item.ipa}]` : ''} <em>${item.pos || ''}</em></div>
             </td>
-            <td><span class="badge-pill" style="${getCategoryBadgeStyle(item.category)}">${item.category}</span></td>
             <td style="max-width: 320px; color: #cbd5e1; font-size: 0.82rem; line-height: 1.4;">
               ${item.definition.length > 90 ? item.definition.substring(0, 90) + '…' : item.definition}
             </td>
@@ -1289,11 +1262,11 @@
       formData.append('name', document.getElementById('name').value);
       formData.append('ipa', document.getElementById('ipa').value);
       formData.append('pos', document.getElementById('pos').value);
-      formData.append('category', document.getElementById('category').value);
       formData.append('letter', document.getElementById('letter').value);
       formData.append('definition', document.getElementById('definition').value);
       formData.append('exampleYoruba', document.getElementById('exampleYoruba').value);
       formData.append('exampleEnglish', document.getElementById('exampleEnglish').value);
+      formData.append('extraFields', JSON.stringify(collectExtraFields()));
 
       if (imageFileInput.files[0]) {
         formData.append('image', imageFileInput.files[0]);
@@ -1339,11 +1312,11 @@
       document.getElementById('name').value = item.name || '';
       document.getElementById('ipa').value = item.ipa || '';
       document.getElementById('pos').value = item.pos || 'n.';
-      document.getElementById('category').value = item.category || 'soup';
       document.getElementById('letter').value = item.letter || '';
       document.getElementById('definition').value = item.definition || '';
       document.getElementById('exampleYoruba').value = item.exampleYoruba || '';
       document.getElementById('exampleEnglish').value = item.exampleEnglish || '';
+      renderExtraFields(item.extraFields || []);
 
       if (item.imageUrl) {
         const imgSrc = item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE}${item.imageUrl}`;
@@ -1393,13 +1366,13 @@
       entryIdInput.value = '';
       clearImageUpload();
       clearAudioUpload();
-      formTitle.textContent = 'Upload New Medicinal';
+      formTitle.textContent = 'New dictionary entry';
       submitBtn.textContent = 'Save Medicinal Entry';
+      renderExtraFields([]);
     }
 
     resetBtn.addEventListener('click', resetForm);
     searchInput.addEventListener('input', renderTable);
-    catFilter.addEventListener('change', renderTable);
 
     // Toast helper
     function showToast(msg, icon = '✅') {
@@ -1410,270 +1383,46 @@
       setTimeout(() => toast.classList.remove('show'), 3500);
     }
 
+    function escapeAttr(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
+    }
+
+    function collectExtraFields() {
+      return Array.from(document.querySelectorAll('.extra-field-row')).map((row) => ({
+        label: row.querySelector('.extra-label').value.trim(),
+        value: row.querySelector('.extra-value').value.trim(),
+      })).filter((field) => field.label && field.value);
+    }
+
+    function addExtraField(label = '', value = '', shouldFocus = true) {
+      const list = document.getElementById('extra-fields-list');
+      const row = document.createElement('div');
+      row.className = 'extra-field-row';
+      row.innerHTML = `
+        <input type="text" class="form-control extra-label" placeholder="Field name, e.g. Botanical name" value="${escapeAttr(label)}">
+        <input type="text" class="form-control extra-value" placeholder="Value" value="${escapeAttr(value)}">
+        <button type="button" class="reset-btn extra-remove-btn" title="Remove field">✕</button>
+      `;
+      row.querySelector('.extra-remove-btn').addEventListener('click', () => row.remove());
+      list.appendChild(row);
+      if (shouldFocus) row.querySelector('.extra-label').focus();
+    }
+
+    function renderExtraFields(fields = []) {
+      const list = document.getElementById('extra-fields-list');
+      list.innerHTML = '';
+      fields.forEach((field) => addExtraField(field.label, field.value, false));
+    }
+
+    document.getElementById('add-extra-field-btn').addEventListener('click', () => addExtraField());
+
     // Init
     checkHealth();
-    loadCategories();
     loadMedicinals();
     setInterval(checkHealth, 10000);
-
-    // ============================================================
-    //  CATEGORY MANAGEMENT SYSTEM
-    // ============================================================
-
-    const CATEGORY_API = CATEGORIES_URL;
-
-    // Auto-generate slug from display name
-    document.getElementById('new-cat-name').addEventListener('input', function () {
-      const slugInput = document.getElementById('new-cat-value');
-      // Only auto-fill if the user hasn't manually typed a slug
-      if (!slugInput.dataset.manual) {
-        slugInput.value = this.value.toLowerCase()
-          .replace(/\s*[\/\(\)]\s*/g, '-')
-          .replace(/[^a-z0-9-]/g, '')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '');
-      }
-    });
-    document.getElementById('new-cat-value').addEventListener('input', function () {
-      this.dataset.manual = 'true';
-    });
-    document.getElementById('new-cat-value').addEventListener('focus', function () {
-      this.dataset.manual = 'true';
-    });
-
-    // Load categories from API
-    async function loadCategories() {
-      try {
-        const res = await fetch(CATEGORY_API, { cache: 'no-store' });
-        const json = await res.json();
-        if (json.success) {
-          allCategories = json.data;
-          populateCategoryDropdowns();
-          renderCategoryList();
-          document.getElementById('stat-categories').textContent = allCategories.length;
-        }
-      } catch (err) {
-        console.log('[Categories] Could not load categories:', err.message);
-      }
-    }
-
-    // Populate the category <select> in the form and the filter dropdown
-    function populateCategoryDropdowns() {
-      const formSelect = document.getElementById('category');
-      const filterSelect = document.getElementById('admin-cat-filter');
-
-      // Remember current selections
-      const currentFormVal = formSelect.value;
-      const currentFilterVal = filterSelect.value;
-
-      // Populate form dropdown
-      formSelect.innerHTML = allCategories.map(cat =>
-        `<option value="${cat.value}">${cat.name}</option>`
-      ).join('');
-
-      // Restore selection if possible
-      if (currentFormVal && formSelect.querySelector(`option[value="${currentFormVal}"]`)) {
-        formSelect.value = currentFormVal;
-      }
-
-      // Populate filter dropdown (keep 'All' at top)
-      const filterOptions = `<option value="all">All Categories</option>` +
-        allCategories.map(cat =>
-          `<option value="${cat.value}">${cat.name}</option>`
-        ).join('');
-      filterSelect.innerHTML = filterOptions;
-
-      // Restore filter selection
-      if (currentFilterVal && filterSelect.querySelector(`option[value="${currentFilterVal}"]`)) {
-        filterSelect.value = currentFilterVal;
-      }
-    }
-
-    // Open / Close category manager panel
-    function openCategoryManager() {
-      document.getElementById('cat-overlay').classList.add('open');
-      document.getElementById('cat-panel').classList.add('open');
-      document.body.style.overflow = 'hidden';
-      loadCategories();
-    }
-
-    function closeCategoryManager() {
-      document.getElementById('cat-overlay').classList.remove('open');
-      document.getElementById('cat-panel').classList.remove('open');
-      document.body.style.overflow = '';
-    }
-
-    // Render the list of categories in the panel
-    function renderCategoryList() {
-      const container = document.getElementById('cat-list-container');
-
-      if (allCategories.length === 0) {
-        container.innerHTML = '<div class="cat-empty">No categories found. Add one above.</div>';
-        return;
-      }
-
-      // Count medicinals per category
-      const countMap = {};
-      allMedicinals.forEach(m => {
-        countMap[m.category] = (countMap[m.category] || 0) + 1;
-      });
-
-      container.innerHTML = allCategories.map(cat => {
-        const count = countMap[cat.value] || 0;
-        const catId = cat.id || cat._id;
-        return `
-          <div class="cat-item" id="cat-item-${catId}">
-            <div class="cat-item-display" style="display: flex; align-items: center; gap: 12px; width: 100%;">
-              <div class="cat-item-color" style="background: ${cat.color}"></div>
-              <div class="cat-item-info">
-                <div class="cat-item-name">${cat.name}</div>
-                <div class="cat-item-value">${cat.value}</div>
-              </div>
-              <div class="cat-item-count">${count} entries</div>
-              <div class="cat-item-actions">
-                <button title="Edit" onclick="startEditCategory('${catId}')">✏️</button>
-                <button class="cat-delete-btn" title="Delete" onclick="deleteCategory('${catId}', '${cat.name.replace(/'/g, "\\'")}')">🗑️</button>
-              </div>
-            </div>
-            <div class="cat-edit-form">
-              <div class="cat-edit-row">
-                <input type="text" id="edit-cat-name-${catId}" value="${cat.name}" placeholder="Display Name">
-                <input type="text" id="edit-cat-value-${catId}" value="${cat.value}" placeholder="Slug Value">
-              </div>
-              <div class="cat-edit-row">
-                <input type="color" id="edit-cat-color-${catId}" value="${cat.color}">
-                <div></div>
-              </div>
-              <div class="cat-edit-actions">
-                <button class="cat-cancel-btn" onclick="cancelEditCategory('${catId}')">Cancel</button>
-                <button class="cat-save-btn" onclick="saveEditCategory('${catId}')">Save Changes</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Add a new category
-    async function addCategory() {
-      const nameInput = document.getElementById('new-cat-name');
-      const valueInput = document.getElementById('new-cat-value');
-      const colorInput = document.getElementById('new-cat-color');
-
-      const name = nameInput.value.trim();
-      const value = valueInput.value.trim();
-      const color = colorInput.value;
-
-      if (!name) {
-        showToast('Please enter a category display name.', '⚠️');
-        nameInput.focus();
-        return;
-      }
-      if (!value) {
-        showToast('Please enter a slug value.', '⚠️');
-        valueInput.focus();
-        return;
-      }
-
-      try {
-        const res = await fetch(CATEGORY_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, value, color, order: allCategories.length }),
-        });
-        const json = await res.json();
-
-        if (json.success) {
-          showToast(`Category "${name}" created!`);
-          nameInput.value = '';
-          valueInput.value = '';
-          valueInput.dataset.manual = '';
-          colorInput.value = '#c4953a';
-          await loadCategories();
-        } else {
-          showToast(json.message || 'Failed to create category', '❌');
-        }
-      } catch (err) {
-        showToast('Network error. Is the backend running?', '❌');
-      }
-    }
-
-    // Start inline editing
-    function startEditCategory(catId) {
-      // Close any other open edits
-      document.querySelectorAll('.cat-item.editing').forEach(el => el.classList.remove('editing'));
-      const item = document.getElementById(`cat-item-${catId}`);
-      if (item) item.classList.add('editing');
-    }
-
-    function cancelEditCategory(catId) {
-      const item = document.getElementById(`cat-item-${catId}`);
-      if (item) item.classList.remove('editing');
-    }
-
-    // Save edited category
-    async function saveEditCategory(catId) {
-      const name = document.getElementById(`edit-cat-name-${catId}`).value.trim();
-      const value = document.getElementById(`edit-cat-value-${catId}`).value.trim();
-      const color = document.getElementById(`edit-cat-color-${catId}`).value;
-
-      if (!name || !value) {
-        showToast('Name and value are required.', '⚠️');
-        return;
-      }
-
-      try {
-        const res = await fetch(`${CATEGORY_API}/${catId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, value, color }),
-        });
-        const json = await res.json();
-
-        if (json.success) {
-          showToast(`Category updated successfully!`);
-          await loadCategories();
-          loadMedicinals(); // Refresh in case slug changed
-        } else {
-          showToast(json.message || 'Failed to update', '❌');
-        }
-      } catch (err) {
-        showToast('Network error while updating.', '❌');
-      }
-    }
-
-    // Delete a category
-    async function deleteCategory(catId, catName) {
-      if (!confirm(`Delete category "${catName}"?\n\nNote: Entries using this category will keep their current value but it won't appear in dropdowns.`)) {
-        return;
-      }
-
-      try {
-        const res = await fetch(`${CATEGORY_API}/${catId}`, { method: 'DELETE' });
-        const json = await res.json();
-
-        if (json.success) {
-          showToast(`Category "${catName}" deleted.`);
-          await loadCategories();
-        } else {
-          showToast(json.message || 'Delete failed', '❌');
-        }
-      } catch (err) {
-        showToast('Network error while deleting.', '❌');
-      }
-    }
-
-    // Dynamic badge color helper — uses category color from allCategories
-    function getCategoryBadgeStyle(categoryValue) {
-      const cat = allCategories.find(c => c.value === categoryValue);
-      if (!cat) return '';
-      // Convert hex to rgba for background
-      const hex = cat.color;
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `background: rgba(${r}, ${g}, ${b}, 0.2); color: ${hex};`;
-    }
   </script>
 </body>
 </html>

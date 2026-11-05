@@ -32,7 +32,7 @@ let ALPHABET = ["All"];
 
 // ---------- State ----------
 let currentLetter = "All";
-let audioToggle = true;
+let audioToggle = false;
 let pictureToggle = false;
 let visibleCount = 9;
 let isLoadingData = true; // True until first backend fetch completes
@@ -61,6 +61,20 @@ function renderAlphabet() {
 }
 
 // ---------- Generate Waveform Bars ----------
+function renderExtraFields(fields) {
+  if (!Array.isArray(fields) || fields.length === 0) return '';
+  return `
+    <dl class="extra-fields">
+      ${fields.map((field) => `
+        <div class="extra-field">
+          <dt>${field.label}</dt>
+          <dd>${field.value}</dd>
+        </div>
+      `).join('')}
+    </dl>
+  `;
+}
+
 function generateWaveformBars() {
   const heights = [8, 12, 6, 14, 9, 11, 7, 13, 8, 10, 6, 12, 9, 14, 7, 11];
   return heights.map(h => `<div class="bar" style="height:${h}px"></div>`).join("");
@@ -94,10 +108,12 @@ function renderCard(food) {
           <span class="ipa-text">[${food.ipa}]</span>
         </div>
         <p class="definition">${food.definition}</p>
+        ${renderExtraFields(food.extraFields)}
+        ${food.exampleYoruba || food.exampleEnglish ? `
         <div class="example-sentence">
-          <div class="yoruba">${food.exampleYoruba}</div>
-          <div class="english">${food.exampleEnglish}</div>
-        </div>
+          ${food.exampleYoruba ? `<div class="yoruba">${food.exampleYoruba}</div>` : ''}
+          ${food.exampleEnglish ? `<div class="english">${food.exampleEnglish}</div>` : ''}
+        </div>` : ''}
       </div>
     </article>
   `;
@@ -128,7 +144,10 @@ function getFilteredFoods() {
       f.definition.toLowerCase().includes(query) ||
       f.ipa.toLowerCase().includes(query) ||
       f.exampleYoruba.toLowerCase().includes(query) ||
-      f.exampleEnglish.toLowerCase().includes(query)
+      f.exampleEnglish.toLowerCase().includes(query) ||
+      (f.extraFields || []).some((field) =>
+        `${field.label} ${field.value}`.toLowerCase().includes(query)
+      )
     );
   }
 
@@ -363,6 +382,7 @@ async function fetchMedicinalsFromBackend() {
         definition: item.definition,
         exampleYoruba: item.exampleYoruba || '',
         exampleEnglish: item.exampleEnglish || '',
+        extraFields: Array.isArray(item.extraFields) ? item.extraFields : [],
         image: item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `${BACKEND_BASE}${item.imageUrl}`) : null,
         audioUrl: item.audioUrl ? (item.audioUrl.startsWith('http') ? item.audioUrl : `${BACKEND_BASE}${item.audioUrl}`) : null,
         hasAudio: item.hasAudio,

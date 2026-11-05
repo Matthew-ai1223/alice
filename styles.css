@@ -1005,6 +1005,34 @@ ul, ol {
   margin-bottom: var(--space-md);
 }
 
+.extra-fields {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 var(--space-md);
+}
+
+.extra-field {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--off-white);
+  border-radius: var(--radius-sm);
+}
+
+.extra-field dt {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gold-500);
+}
+
+.extra-field dd {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--navy-800);
+}
+
 /* Example Sentence */
 .example-sentence {
   border-left: 3px solid var(--gold-500);
