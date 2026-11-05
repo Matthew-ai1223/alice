@@ -84,6 +84,46 @@
       margin: 0 auto;
       padding: 32px 24px;
     }
+    #admin-shell { display: none; }
+    #admin-shell.is-open { display: block; }
+    #admin-login.is-hidden { display: none; }
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top, rgba(196, 149, 58, 0.16), transparent 42%),
+        #0b1226;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #142044;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+    .login-card h1 {
+      font-family: var(--font-serif);
+      color: #fff;
+      font-size: 1.7rem;
+      margin: 0 0 6px;
+    }
+    .login-card p {
+      color: #a0aed4;
+      font-size: 0.9rem;
+      margin: 0 0 24px;
+    }
+    .login-error {
+      display: none;
+      color: #e74c3c;
+      font-size: 0.82rem;
+      margin: 0 0 12px;
+    }
+    .login-error.show { display: block; }
     .admin-tabs {
       display: flex;
       gap: 8px;
@@ -853,22 +893,32 @@
 </head>
 <body class="admin-body">
 
+  <div id="admin-login" class="login-screen">
+    <form class="login-card" id="admin-login-form">
+      <h1>Admin access</h1>
+      <p>Enter the access key to manage dictionary entries and the About page.</p>
+      <p class="login-error" id="login-error">That key is not correct.</p>
+      <div class="form-group">
+        <label for="admin-key">Access key</label>
+        <input type="password" id="admin-key" class="form-control" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="submit-btn">Sign in</button>
+    </form>
+  </div>
+
+  <div id="admin-shell">
   <!-- ====== Admin Nav ====== -->
   <header class="admin-nav">
     <div class="logo-group">
       <h1>Adeniyi Alice</h1>
       <span style="color: #7080bc;">/</span>
       <span style="font-size: 0.95rem; font-weight: 600; color: #c4953a;">Medicinal Admin Portal</span>
-      <div id="connection-status" class="status-badge status-offline">
-        <span class="status-dot"></span>
-        <span id="status-text">Backend Offline</span>
-      </div>
     </div>
     <div class="admin-nav-links">
-      <a href="index.html">← Client Dictionary</a>
+      <a href="index.html">← Dictionary</a>
       <a href="about.html">View About</a>
       <a href="#about" id="admin-about-tab-link">Edit About</a>
-      <a href="/api/health" target="_blank" style="color: #c4953a;">API Health ↗</a>
+      <a href="#" id="admin-sign-out">Sign out</a>
     </div>
   </header>
 
@@ -1286,6 +1336,7 @@
       </section>
     </div>
   </main>
+  </div>
 
   <!-- Notification Toast -->
   <div id="toast" class="toast">
@@ -1304,10 +1355,10 @@
     })();
     const API_URL = `${API_BASE}/api/medicinals`;
     const ABOUT_URL = `${API_BASE}/api/about`;
-    const HEALTH_URL = `${API_BASE}/api/health`;
+    const ADMIN_KEY = 'bukun';
+    const AUTH_STORAGE = 'alice-admin-session';
 
     let allMedicinals = [];
-    let isBackendOnline = false;
 
     // Elements
     const form = document.getElementById('medicinal-form');
@@ -1327,29 +1378,6 @@
 
     const entriesTbody = document.getElementById('entries-tbody');
     const searchInput = document.getElementById('admin-search');
-
-    const connStatus = document.getElementById('connection-status');
-    const statusText = document.getElementById('status-text');
-
-    // 1. Check Backend Health
-    async function checkHealth() {
-      try {
-        const res = await fetch(HEALTH_URL, { cache: 'no-store' });
-        if (res.ok) {
-          const healthData = await res.json().catch(() => ({}));
-          isBackendOnline = true;
-          connStatus.className = 'status-badge status-online';
-          const platformLabel = healthData.platform || (window.location.port === '5000' ? 'Port 5000' : 'Vercel / Cloud');
-          statusText.textContent = `Backend Online (${platformLabel})`;
-        } else {
-          throw new Error('Not ok');
-        }
-      } catch (err) {
-        isBackendOnline = false;
-        connStatus.className = 'status-badge status-offline';
-        statusText.textContent = 'Backend Offline';
-      }
-    }
 
     // 2. Fetch Stats
     async function loadStats() {
@@ -1383,12 +1411,8 @@
       } catch (err) {
         entriesTbody.innerHTML = `
           <tr>
-            <td colspan="5" style="text-align: center; padding: 40px; color: #e74c3c;">
-              <strong>⚠️ Unable to connect to Backend Server.</strong><br>
-              <span style="font-size: 0.8rem; color: #a0aed4;">
-                Please ensure you started the backend: <code>cd server && npm run dev</code><br>
-                Server address: http://localhost:5000
-              </span>
+            <td colspan="5" style="text-align: center; padding: 40px; color: #a0aed4;">
+              Entries could not be loaded. Please try again.
             </td>
           </tr>
         `;
@@ -1796,11 +1820,41 @@
       document.getElementById('about-portrait-name').textContent = file.name;
     });
 
-    // Init
-    checkHealth();
-    loadMedicinals();
-    setInterval(checkHealth, 10000);
-    if (window.location.hash === '#about') showAdminTab('about');
+    function openAdmin() {
+      document.getElementById('admin-login').classList.add('is-hidden');
+      document.getElementById('admin-shell').classList.add('is-open');
+      loadMedicinals();
+      if (window.location.hash === '#about') showAdminTab('about');
+    }
+
+    function closeAdmin() {
+      sessionStorage.removeItem(AUTH_STORAGE);
+      window.location.hash = '';
+      window.location.reload();
+    }
+
+    document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const key = document.getElementById('admin-key').value.trim();
+      const errorEl = document.getElementById('login-error');
+      if (key === ADMIN_KEY) {
+        sessionStorage.setItem(AUTH_STORAGE, 'ok');
+        errorEl.classList.remove('show');
+        openAdmin();
+      } else {
+        errorEl.classList.add('show');
+        document.getElementById('admin-key').focus();
+      }
+    });
+
+    document.getElementById('admin-sign-out').addEventListener('click', (e) => {
+      e.preventDefault();
+      closeAdmin();
+    });
+
+    if (sessionStorage.getItem(AUTH_STORAGE) === 'ok') {
+      openAdmin();
+    }
   </script>
 </body>
 </html>

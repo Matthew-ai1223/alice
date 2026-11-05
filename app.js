@@ -191,8 +191,7 @@ function renderEntries() {
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; animation: spin 1.2s linear infinite;">
             <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
           </svg>
-          <p style="font-size: 1.1rem; font-weight: 600;">Loading entries from server…</p>
-          <p style="font-size: 0.9rem; margin-top: 4px; color: var(--gray-500);">Connecting to backend at localhost:5000</p>
+          <p style="font-size: 1.1rem; font-weight: 600;">Loading entries…</p>
         </div>
       `;
     } else if (FOODS.length === 0) {
@@ -204,7 +203,7 @@ function renderEntries() {
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
           <p style="font-size: 1.1rem; font-weight: 600;">No entries available yet</p>
-          <p style="font-size: 0.9rem; margin-top: 4px;">Add entries via the <a href="admin.html" style="color: var(--gold-400);">Admin Portal</a>, or ensure the backend server is running.</p>
+          <p style="font-size: 0.9rem; margin-top: 4px;">Please check back soon.</p>
         </div>
       `;
     } else {
@@ -306,7 +305,7 @@ function playAudio(id) {
     }
     const audio = new Audio(item.audioUrl);
     currentPlayingAudio = audio;
-    audio.play().catch(e => console.log('Audio playback prevented:', e));
+    audio.play().catch(() => {});
 
     audio.onended = () => resetAudioUI(btn, bars);
     audio.onerror = () => resetAudioUI(btn, bars);
@@ -373,7 +372,6 @@ async function fetchMedicinalsFromBackend() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     if (json.success && Array.isArray(json.data)) {
-      console.log(`[Backend] Synced ${json.data.length} medicinals from API`);
       FOODS = json.data.map(item => ({
         id: item.id || item._id,
         name: item.name,
@@ -398,7 +396,7 @@ async function fetchMedicinalsFromBackend() {
       }
     }
   } catch (err) {
-    console.log('[Backend] Could not reach backend:', err.message);
+    /* Keep dictionary usable even if the API is unreachable. */
   } finally {
     // Mark loading complete regardless of success/failure
     isLoadingData = false;
@@ -433,13 +431,9 @@ function initPWA() {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
         .then((reg) => {
-          console.log('[PWA] Service Worker registered (No-cache mode)');
-          // Force update check on every load
           reg.update();
         })
-        .catch((err) => {
-          console.warn('[PWA] Service Worker registration failed:', err);
-        });
+        .catch(() => {});
     });
   }
 
@@ -458,7 +452,6 @@ function initPWA() {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`[PWA] Install prompt outcome: ${outcome}`);
         deferredPrompt = null;
         installBtn.style.display = 'none';
       });
@@ -466,7 +459,6 @@ function initPWA() {
   });
 
   window.addEventListener('appinstalled', () => {
-    console.log('[PWA] App successfully installed');
     if (installBtn) {
       installBtn.style.display = 'none';
     }
