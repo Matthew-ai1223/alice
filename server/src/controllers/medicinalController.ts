@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Medicinal } from '../models/Medicinal.js';
 import { SEED_DATA } from '../data/seedData.js';
+import { isDbConnected, localFallbackBlocked } from '../config/db.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -16,10 +17,6 @@ function getDataFilePath(): string {
   const relativeData = path.resolve(process.cwd(), 'data');
   if (fs.existsSync(relativeData)) return path.join(relativeData, 'medicinals.json');
   return serverPath;
-}
-
-function isDbConnected(): boolean {
-  return mongoose.connection.readyState === 1;
 }
 
 // Local file-backed storage helpers
@@ -229,6 +226,8 @@ export async function getAllMedicinals(req: Request, res: Response): Promise<voi
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     // Fallback: Local file data
     let items = getLocalData();
 
@@ -297,6 +296,8 @@ export async function getMedicinalById(req: Request, res: Response): Promise<voi
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     const items = getLocalData();
     const item = items.find((i) => i._id === id || i.id === id);
     if (!item) {
@@ -347,6 +348,8 @@ async function sendEntryMedia(req: Request, res: Response, kind: 'image' | 'audi
       res.status(404).json({ success: false, message: 'Media not found' });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     const item = getLocalData().find((entry) => entry._id === id || entry.id === id);
     if (!item) {
@@ -433,6 +436,8 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
       });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     // Local storage creation
     const items = getLocalData();
@@ -553,6 +558,8 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     // Local storage update
     const items = getLocalData();
     const index = items.findIndex((i) => i._id === id || i.id === id);
@@ -643,6 +650,8 @@ export async function deleteMedicinal(req: Request, res: Response): Promise<void
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     // Local storage delete
     const items = getLocalData();
     const index = items.findIndex((i) => i._id === id || i.id === id);
@@ -700,6 +709,8 @@ export async function getStats(req: Request, res: Response): Promise<void> {
       });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     const items = getLocalData();
     const totalEntries = items.length;

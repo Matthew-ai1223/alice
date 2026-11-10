@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import mongoose from 'mongoose';
 import { Category } from '../models/Category.js';
+import { isDbConnected, localFallbackBlocked } from '../config/db.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -16,10 +16,6 @@ function getCategoriesFilePath(): string {
   const relativeData = path.resolve(process.cwd(), 'data');
   if (fs.existsSync(relativeData)) return path.join(relativeData, 'categories.json');
   return serverPath;
-}
-
-function isDbConnected(): boolean {
-  return mongoose.connection.readyState === 1;
 }
 
 // Default categories (matches the original hardcoded set)
@@ -117,6 +113,8 @@ export async function getAllCategories(req: Request, res: Response): Promise<voi
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     // Fallback: Local file data
     const items = getLocalCategories();
     items.sort((a, b) => a.order - b.order);
@@ -172,6 +170,8 @@ export async function createCategory(req: Request, res: Response): Promise<void>
       });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     // Local storage creation
     const items = getLocalCategories();
@@ -263,6 +263,8 @@ export async function updateCategory(req: Request, res: Response): Promise<void>
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     // Local storage update
     const items = getLocalCategories();
     const index = items.findIndex((i) => i._id === id || i.id === id);
@@ -344,6 +346,8 @@ export async function deleteCategory(req: Request, res: Response): Promise<void>
       res.json({ success: true, message: `Category "${item.name}" deleted successfully` });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     // Local storage delete
     const items = getLocalCategories();

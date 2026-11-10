@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { Category } from '../models/Category.js';
+import { isDbConnected, localFallbackBlocked } from '../config/db.js';
 import fs from 'fs';
 import path from 'path';
 // In-memory cache for serverless/read-only environments
@@ -16,9 +16,6 @@ function getCategoriesFilePath() {
     if (fs.existsSync(relativeData))
         return path.join(relativeData, 'categories.json');
     return serverPath;
-}
-function isDbConnected() {
-    return mongoose.connection.readyState === 1;
 }
 // Default categories (matches the original hardcoded set)
 const DEFAULT_CATEGORIES = [
@@ -94,6 +91,8 @@ export async function getAllCategories(req, res) {
             res.json({ success: true, count: items.length, data: items });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Fallback: Local file data
         const items = getLocalCategories();
         items.sort((a, b) => a.order - b.order);
@@ -143,6 +142,8 @@ export async function createCategory(req, res) {
             });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Local storage creation
         const items = getLocalCategories();
         const exists = items.find((c) => c.value === slug);
@@ -227,6 +228,8 @@ export async function updateCategory(req, res) {
             });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Local storage update
         const items = getLocalCategories();
         const index = items.findIndex((i) => i._id === id || i.id === id);
@@ -305,6 +308,8 @@ export async function deleteCategory(req, res) {
             res.json({ success: true, message: `Category "${item.name}" deleted successfully` });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Local storage delete
         const items = getLocalCategories();
         const index = items.findIndex((i) => i._id === id || i.id === id);

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Medicinal } from '../models/Medicinal.js';
 import { SEED_DATA } from '../data/seedData.js';
+import { isDbConnected, localFallbackBlocked } from '../config/db.js';
 import fs from 'fs';
 import path from 'path';
 // In-memory cache for serverless/read-only environments
@@ -16,9 +17,6 @@ function getDataFilePath() {
     if (fs.existsSync(relativeData))
         return path.join(relativeData, 'medicinals.json');
     return serverPath;
-}
-function isDbConnected() {
-    return mongoose.connection.readyState === 1;
 }
 function publicMediaUrl(id, kind) {
     return `/api/medicinals/${id}/${kind}`;
@@ -181,6 +179,8 @@ export async function getAllMedicinals(req, res) {
             });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Fallback: Local file data
         let items = getLocalData();
         if (category && category !== 'all') {
@@ -234,6 +234,8 @@ export async function getMedicinalById(req, res) {
             res.json({ success: true, data: item });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         const items = getLocalData();
         const item = items.find((i) => i._id === id || i.id === id);
         if (!item) {
@@ -277,6 +279,8 @@ async function sendEntryMedia(req, res, kind) {
             res.status(404).json({ success: false, message: 'Media not found' });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         const item = getLocalData().find((entry) => entry._id === id || entry.id === id);
         if (!item) {
             res.status(404).json({ success: false, message: 'Entry not found' });
@@ -346,6 +350,8 @@ export async function createMedicinal(req, res) {
             });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Local storage creation
         const items = getLocalData();
         const newId = `local_${Date.now()}`;
@@ -453,6 +459,8 @@ export async function updateMedicinal(req, res) {
             });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Local storage update
         const items = getLocalData();
         const index = items.findIndex((i) => i._id === id || i.id === id);
@@ -551,6 +559,8 @@ export async function deleteMedicinal(req, res) {
             res.json({ success: true, message: 'Entry deleted successfully' });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         // Local storage delete
         const items = getLocalData();
         const index = items.findIndex((i) => i._id === id || i.id === id);
@@ -610,6 +620,8 @@ export async function getStats(req, res) {
             });
             return;
         }
+        if (localFallbackBlocked(res))
+            return;
         const items = getLocalData();
         const totalEntries = items.length;
         const audioCount = items.filter((i) => i.hasAudio).length;

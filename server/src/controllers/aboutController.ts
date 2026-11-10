@@ -1,15 +1,11 @@
 import { Request, Response } from 'express';
-import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import { About } from '../models/About.js';
 import { DEFAULT_ABOUT, type AboutContent } from '../data/aboutContent.js';
+import { isDbConnected, localFallbackBlocked } from '../config/db.js';
 
 let memoryAbout: AboutContent | null = null;
-
-function isDbConnected(): boolean {
-  return mongoose.connection.readyState === 1;
-}
 
 function getAboutFilePath(): string {
   const serverPath = path.resolve(process.cwd(), 'server', 'data', 'about.json');
@@ -74,6 +70,8 @@ export async function getAbout(_req: Request, res: Response): Promise<void> {
       return;
     }
 
+    if (localFallbackBlocked(res)) return;
+
     res.json({ success: true, data: readLocalAbout() });
   } catch (error: any) {
     res.status(500).json({
@@ -104,6 +102,8 @@ export async function updateAbout(req: Request, res: Response): Promise<void> {
       });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     const next = mergeAbout({ ...readLocalAbout(), ...incoming });
     saveLocalAbout(next);
@@ -147,6 +147,8 @@ export async function updateAboutPortrait(req: Request, res: Response): Promise<
       });
       return;
     }
+
+    if (localFallbackBlocked(res)) return;
 
     const next = mergeAbout({ ...readLocalAbout(), portraitUrl });
     saveLocalAbout(next);

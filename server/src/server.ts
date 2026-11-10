@@ -85,8 +85,11 @@ app.use(async (req, res, next) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const readyState = mongoose.connection.readyState;
   res.json({
     status: 'online',
+    db: readyState === 1 ? 'connected' : 'disconnected',
+    dbReadyState: readyState,
     system: 'Digital Dictionary of Yorùbá Traditional Medicinal Vocabulary API',
     version: '1.0.0',
     platform: isVercel ? 'Vercel Serverless' : 'Node.js Express',
