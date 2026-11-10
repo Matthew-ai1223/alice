@@ -2,6 +2,8 @@ import { Router } from 'express';
 import {
   getAllMedicinals,
   getMedicinalById,
+  getMedicinalImage,
+  getMedicinalAudio,
   createMedicinal,
   updateMedicinal,
   deleteMedicinal,
@@ -13,6 +15,8 @@ const router = Router();
 
 // Stats endpoint
 router.get('/stats', getStats);
+router.get('/:id/image', getMedicinalImage);
+router.get('/:id/audio', getMedicinalAudio);
 
 // Main CRUD endpoints
 router.get('/', getAllMedicinals);

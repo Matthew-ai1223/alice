@@ -18,10 +18,19 @@ const MedicinalSchema = new Schema({
     },
     category: {
         type: String,
-        required: [true, 'Category is required'],
         trim: true,
         lowercase: true,
-        index: true,
+        default: '',
+    },
+    extraFields: {
+        type: [
+            {
+                label: { type: String, trim: true },
+                value: { type: String, trim: true },
+                _id: false,
+            },
+        ],
+        default: [],
     },
     definition: {
         type: String,
@@ -45,6 +54,22 @@ const MedicinalSchema = new Schema({
     audioUrl: {
         type: String,
         default: null,
+    },
+    imageMime: {
+        type: String,
+        default: null,
+    },
+    audioMime: {
+        type: String,
+        default: null,
+    },
+    imageData: {
+        type: Buffer,
+        select: false,
+    },
+    audioData: {
+        type: Buffer,
+        select: false,
     },
     hasAudio: {
         type: Boolean,
@@ -71,6 +96,8 @@ const MedicinalSchema = new Schema({
             ret.id = ret._id;
             delete ret._id;
             delete ret.__v;
+            delete ret.imageData;
+            delete ret.audioData;
             return ret;
         },
     },

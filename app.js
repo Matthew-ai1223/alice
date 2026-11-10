@@ -366,6 +366,12 @@ const BACKEND_BASE = (() => {
   return '';
 })();
 
+function resolveMediaUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+  return `${BACKEND_BASE}${url}`;
+}
+
 async function fetchMedicinalsFromBackend() {
   try {
     const res = await fetch(`${BACKEND_BASE}/api/medicinals`, { cache: 'no-store' });
@@ -381,8 +387,8 @@ async function fetchMedicinalsFromBackend() {
         exampleYoruba: item.exampleYoruba || '',
         exampleEnglish: item.exampleEnglish || '',
         extraFields: Array.isArray(item.extraFields) ? item.extraFields : [],
-        image: item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `${BACKEND_BASE}${item.imageUrl}`) : null,
-        audioUrl: item.audioUrl ? (item.audioUrl.startsWith('http') ? item.audioUrl : `${BACKEND_BASE}${item.audioUrl}`) : null,
+        image: resolveMediaUrl(item.imageUrl),
+        audioUrl: resolveMediaUrl(item.audioUrl),
         hasAudio: item.hasAudio,
         hasPicture: item.hasPicture,
         letter: item.letter || 'A'

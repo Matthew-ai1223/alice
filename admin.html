@@ -1115,7 +1115,7 @@
               <div class="dropzone-label">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                 <strong>Click or drop photo here</strong>
-                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP (Max 15MB)</span>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP (Max 4MB)</span>
               </div>
             </div>
             <div id="image-preview" class="preview-box" style="display: none;">
@@ -1133,7 +1133,7 @@
               <div class="dropzone-label">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
                 <strong>Click or drop audio here</strong>
-                <span style="font-size: 0.72rem; color: #7080bc;">Supports MP3, WAV, M4A, OGG</span>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports MP3, WAV, M4A, OGG (Max 4MB)</span>
               </div>
             </div>
             <div id="audio-preview" class="preview-box" style="display: none;">
@@ -1394,6 +1394,12 @@
     const ADMIN_KEY = 'bukun';
     const AUTH_STORAGE = 'alice-admin-session';
 
+    function resolveAdminMedia(url) {
+      if (!url) return '';
+      if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+      return `${API_BASE}${url}`;
+    }
+
     const ICON = {
       leaf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>',
       play: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
@@ -1497,12 +1503,12 @@
         // Resolve image URL
         let imgSrc = '';
         if (item.imageUrl) {
-          imgSrc = item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE}${item.imageUrl}`;
+          imgSrc = resolveAdminMedia(item.imageUrl);
         }
 
         let audSrc = '';
         if (item.audioUrl) {
-          audSrc = item.audioUrl.startsWith('http') ? item.audioUrl : `${API_BASE}${item.audioUrl}`;
+          audSrc = resolveAdminMedia(item.audioUrl);
         }
 
         const thumbHtml = imgSrc
@@ -1653,7 +1659,7 @@
       renderExtraFields(item.extraFields || []);
 
       if (item.imageUrl) {
-        const imgSrc = item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE}${item.imageUrl}`;
+        const imgSrc = resolveAdminMedia(item.imageUrl);
         previewImg.src = imgSrc;
         previewImgName.textContent = 'Existing Image';
         imagePreview.style.display = 'flex';
@@ -1662,7 +1668,7 @@
       }
 
       if (item.audioUrl) {
-        const audSrc = item.audioUrl.startsWith('http') ? item.audioUrl : `${API_BASE}${item.audioUrl}`;
+        const audSrc = resolveAdminMedia(item.audioUrl);
         previewAud.src = audSrc;
         audioPreview.style.display = 'flex';
       } else {

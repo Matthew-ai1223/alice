@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import { connectDB } from './config/db.js';
 import medicinalRoutes from './routes/medicinalRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import aboutRoutes from './routes/aboutRoutes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Load environment variables
@@ -84,9 +85,17 @@ app.get('/api/health', (req, res) => {
 // Mount medicinal routes
 app.use('/api/medicinals', medicinalRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/about', aboutRoutes);
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error('[Server Error]', err);
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        res.status(400).json({
+            success: false,
+            message: 'File is too large. Images and audio must be 4MB or smaller.',
+        });
+        return;
+    }
     res.status(err.status || 500).json({
         success: false,
         message: err.message || 'Internal Server Error',

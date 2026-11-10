@@ -16,6 +16,10 @@ export interface IMedicinal extends Document {
   extraFields: IExtraField[];
   imageUrl?: string | null;
   audioUrl?: string | null;
+  imageMime?: string | null;
+  audioMime?: string | null;
+  imageData?: Buffer;
+  audioData?: Buffer;
   hasAudio: boolean;
   hasPicture: boolean;
   letter: string;
@@ -80,6 +84,22 @@ const MedicinalSchema: Schema = new Schema(
       type: String,
       default: null,
     },
+    imageMime: {
+      type: String,
+      default: null,
+    },
+    audioMime: {
+      type: String,
+      default: null,
+    },
+    imageData: {
+      type: Buffer,
+      select: false,
+    },
+    audioData: {
+      type: Buffer,
+      select: false,
+    },
     hasAudio: {
       type: Boolean,
       default: false,
@@ -106,6 +126,8 @@ const MedicinalSchema: Schema = new Schema(
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
+        delete ret.imageData;
+        delete ret.audioData;
         return ret;
       },
     },

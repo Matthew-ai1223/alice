@@ -1,53 +1,7 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 
-const isVercel = Boolean(process.env.VERCEL);
-
-// Vercel only allows writes under /tmp
-const UPLOAD_ROOT = isVercel
-  ? path.join('/tmp', 'uploads')
-  : path.resolve(process.cwd(), 'uploads');
-const IMAGES_DIR = path.join(UPLOAD_ROOT, 'images');
-const AUDIO_DIR = path.join(UPLOAD_ROOT, 'audio');
-
-try {
-  [UPLOAD_ROOT, IMAGES_DIR, AUDIO_DIR].forEach((dir) => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  });
-} catch (err) {
-  console.warn('[Uploads Notice] Could not create upload directories:', err);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    try {
-      const dest =
-        file.fieldname === 'image'
-          ? IMAGES_DIR
-          : file.fieldname === 'audio'
-            ? AUDIO_DIR
-            : UPLOAD_ROOT;
-      if (!fs.existsSync(dest)) {
-        fs.mkdirSync(dest, { recursive: true });
-      }
-      cb(null, dest);
-    } catch (err) {
-      cb(err as Error, UPLOAD_ROOT);
-    }
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const cleanName = path
-      .basename(file.originalname, ext)
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, '-');
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${cleanName}-${uniqueSuffix}${ext}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (
   req: any,
@@ -85,7 +39,7 @@ export const uploadMedicinalFiles = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB max file size
+    fileSize: 4 * 1024 * 1024, // 4MB — Vercel serverless body limit
   },
 }).fields([
   { name: 'image', maxCount: 1 },

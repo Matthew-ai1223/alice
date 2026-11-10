@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { getAllMedicinals, getMedicinalById, createMedicinal, updateMedicinal, deleteMedicinal, getStats, } from '../controllers/medicinalController.js';
+import { getAllMedicinals, getMedicinalById, getMedicinalImage, getMedicinalAudio, createMedicinal, updateMedicinal, deleteMedicinal, getStats, } from '../controllers/medicinalController.js';
 import { uploadMedicinalFiles } from '../middlewares/upload.js';
 const router = Router();
 // Stats endpoint
 router.get('/stats', getStats);
+router.get('/:id/image', getMedicinalImage);
+router.get('/:id/audio', getMedicinalAudio);
 // Main CRUD endpoints
 router.get('/', getAllMedicinals);
 router.get('/:id', getMedicinalById);

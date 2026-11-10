@@ -130,7 +130,9 @@ export async function updateAboutPortrait(req: Request, res: Response): Promise<
       return;
     }
 
-    const portraitUrl = `/uploads/images/${file.filename}`;
+    const portraitUrl = file.buffer
+      ? `data:${file.mimetype};base64,${file.buffer.toString('base64')}`
+      : `/uploads/images/${file.filename}`;
 
     if (isDbConnected()) {
       const updated = await About.findOneAndUpdate(

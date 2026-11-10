@@ -102,6 +102,13 @@ app.use('/api/about', aboutRoutes);
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('[Server Error]', err);
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    res.status(400).json({
+      success: false,
+      message: 'File is too large. Images and audio must be 4MB or smaller.',
+    });
+    return;
+  }
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',

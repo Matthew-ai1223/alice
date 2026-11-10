@@ -41,11 +41,49 @@ interface LocalEntry {
   extraFields: ExtraField[];
   imageUrl: string | null;
   audioUrl: string | null;
+  imageMime?: string | null;
+  audioMime?: string | null;
+  imageData?: string | null;
+  audioData?: string | null;
   hasAudio: boolean;
   hasPicture: boolean;
   letter: string;
   createdAt: string;
   updatedAt: string;
+}
+
+function publicMediaUrl(id: string, kind: 'image' | 'audio'): string {
+  return `/api/medicinals/${id}/${kind}`;
+}
+
+function withoutMediaPayload<T extends { imageData?: unknown; audioData?: unknown }>(item: T) {
+  const { imageData, audioData, ...rest } = item;
+  return rest;
+}
+
+function toMediaBuffer(data: unknown): Buffer | null {
+  if (!data) return null;
+  if (Buffer.isBuffer(data)) return data;
+  if (typeof data === 'string') return Buffer.from(data, 'base64');
+  if (typeof data === 'object' && data !== null && 'buffer' in data) {
+    return Buffer.from((data as { buffer: ArrayBuffer }).buffer);
+  }
+  return null;
+}
+
+function sendMedia(
+  res: Response,
+  data: unknown,
+  mime: string | null | undefined,
+  fallbackMime: string
+): boolean {
+  const buffer = toMediaBuffer(data);
+  if (!buffer?.length) return false;
+  res.setHeader('Content-Type', mime || fallbackMime);
+  res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(buffer);
+  return true;
 }
 
 function parseExtraFields(raw: unknown): ExtraField[] {
@@ -182,7 +220,7 @@ export async function getAllMedicinals(req: Request, res: Response): Promise<voi
         ];
       }
 
-      const items = await Medicinal.find(filter).sort({ letter: 1, name: 1 });
+      const items = await Medicinal.find(filter).select('-imageData -audioData').sort({ letter: 1, name: 1 });
       res.json({
         success: true,
         count: items.length,
@@ -233,7 +271,7 @@ export async function getAllMedicinals(req: Request, res: Response): Promise<voi
     res.json({
       success: true,
       count: items.length,
-      data: items,
+      data: items.map((item) => withoutMediaPayload(item)),
     });
   } catch (error: any) {
     res.status(500).json({
@@ -250,7 +288,7 @@ export async function getMedicinalById(req: Request, res: Response): Promise<voi
     const id = req.params.id;
 
     if (isDbConnected()) {
-      const item = await Medicinal.findById(id);
+      const item = await Medicinal.findById(id).select('-imageData -audioData');
       if (!item) {
         res.status(404).json({ success: false, message: 'Medicinal entry not found' });
         return;
@@ -266,9 +304,71 @@ export async function getMedicinalById(req: Request, res: Response): Promise<voi
       return;
     }
 
-    res.json({ success: true, data: item });
+    res.json({ success: true, data: withoutMediaPayload(item) });
   } catch (error: any) {
     res.status(500).json({ success: false, message: 'Error retrieving entry', error: error.message });
+  }
+}
+
+export async function getMedicinalImage(req: Request, res: Response): Promise<void> {
+  await sendEntryMedia(req, res, 'image');
+}
+
+export async function getMedicinalAudio(req: Request, res: Response): Promise<void> {
+  await sendEntryMedia(req, res, 'audio');
+}
+
+async function sendEntryMedia(req: Request, res: Response, kind: 'image' | 'audio'): Promise<void> {
+  const id = req.params.id;
+  const fallbackMime = kind === 'image' ? 'image/jpeg' : 'audio/mpeg';
+
+  try {
+    if (isDbConnected()) {
+      const item = await Medicinal.findById(id).select(
+        kind === 'image' ? '+imageData imageMime imageUrl' : '+audioData audioMime audioUrl'
+      );
+      if (!item) {
+        res.status(404).json({ success: false, message: 'Entry not found' });
+        return;
+      }
+      const data = kind === 'image' ? item.imageData : item.audioData;
+      const mime = kind === 'image' ? item.imageMime : item.audioMime;
+      if (sendMedia(res, data, mime, fallbackMime)) return;
+
+      const legacyUrl = kind === 'image' ? item.imageUrl : item.audioUrl;
+      if (legacyUrl && legacyUrl.startsWith('/uploads/')) {
+        const diskPath = path.resolve(process.cwd(), legacyUrl.replace(/^\//, ''));
+        if (fs.existsSync(diskPath)) {
+          res.sendFile(diskPath);
+          return;
+        }
+      }
+
+      res.status(404).json({ success: false, message: 'Media not found' });
+      return;
+    }
+
+    const item = getLocalData().find((entry) => entry._id === id || entry.id === id);
+    if (!item) {
+      res.status(404).json({ success: false, message: 'Entry not found' });
+      return;
+    }
+    const data = kind === 'image' ? item.imageData : item.audioData;
+    const mime = kind === 'image' ? item.imageMime : item.audioMime;
+    if (sendMedia(res, data, mime, fallbackMime)) return;
+
+    const legacyUrl = kind === 'image' ? item.imageUrl : item.audioUrl;
+    if (legacyUrl && legacyUrl.startsWith('/uploads/')) {
+      const diskPath = path.resolve(process.cwd(), legacyUrl.replace(/^\//, ''));
+      if (fs.existsSync(diskPath)) {
+        res.sendFile(diskPath);
+        return;
+      }
+    }
+
+    res.status(404).json({ success: false, message: 'Media not found' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Failed to load media', error: error.message });
   }
 }
 
@@ -297,20 +397,14 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
     const parsedExtraFields = parseExtraFields(extraFields);
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-    let imageUrl: string | null = null;
-    let audioUrl: string | null = null;
-
-    if (files?.image && files.image[0]) {
-      imageUrl = `/uploads/images/${files.image[0].filename}`;
-    }
-    if (files?.audio && files.audio[0]) {
-      audioUrl = `/uploads/audio/${files.audio[0].filename}`;
-    }
-
+    const imageFile = files?.image?.[0];
+    const audioFile = files?.audio?.[0];
     const determinedLetter = letter ? String(letter).trim() : getLetterGroup(name);
 
     if (isDbConnected()) {
+      const id = new mongoose.Types.ObjectId();
       const newMedicinal = new Medicinal({
+        _id: id,
         name: name.trim(),
         ipa: (ipa || '').trim(),
         pos: (pos || 'n.').trim(),
@@ -320,10 +414,14 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
         exampleEnglish: (exampleEnglish || '').trim(),
         extraFields: parsedExtraFields,
         letter: determinedLetter,
-        imageUrl,
-        audioUrl,
-        hasPicture: Boolean(imageUrl),
-        hasAudio: Boolean(audioUrl),
+        imageUrl: imageFile ? publicMediaUrl(String(id), 'image') : null,
+        audioUrl: audioFile ? publicMediaUrl(String(id), 'audio') : null,
+        imageMime: imageFile?.mimetype || null,
+        audioMime: audioFile?.mimetype || null,
+        imageData: imageFile?.buffer,
+        audioData: audioFile?.buffer,
+        hasPicture: Boolean(imageFile),
+        hasAudio: Boolean(audioFile),
       });
 
       const saved = await newMedicinal.save();
@@ -354,10 +452,14 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
       exampleEnglish: (exampleEnglish || '').trim(),
       extraFields: parsedExtraFields,
       letter: determinedLetter,
-      imageUrl,
-      audioUrl,
-      hasPicture: Boolean(imageUrl),
-      hasAudio: Boolean(audioUrl),
+      imageUrl: imageFile ? publicMediaUrl(newId, 'image') : null,
+      audioUrl: audioFile ? publicMediaUrl(newId, 'audio') : null,
+      imageMime: imageFile?.mimetype || null,
+      audioMime: audioFile?.mimetype || null,
+      imageData: imageFile?.buffer ? imageFile.buffer.toString('base64') : null,
+      audioData: audioFile?.buffer ? audioFile.buffer.toString('base64') : null,
+      hasPicture: Boolean(imageFile),
+      hasAudio: Boolean(audioFile),
       createdAt: now,
       updatedAt: now,
     };
@@ -368,7 +470,7 @@ export async function createMedicinal(req: Request, res: Response): Promise<void
     res.status(201).json({
       success: true,
       message: 'Medicinal entry created successfully (Local Storage)',
-      data: newEntry,
+      data: withoutMediaPayload(newEntry),
     });
   } catch (error: any) {
     res.status(500).json({
@@ -417,36 +519,26 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
       if (letter) item.letter = letter.trim();
       else if (name) item.letter = getLetterGroup(name);
 
-      // Handle Image replacement or removal
-      if (files?.image && files.image[0]) {
-        if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
-          const oldPath = path.resolve(process.cwd(), item.imageUrl.replace(/^\//, ''));
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
-        item.imageUrl = `/uploads/images/${files.image[0].filename}`;
+      if (files?.image?.[0]) {
+        item.imageData = files.image[0].buffer;
+        item.imageMime = files.image[0].mimetype;
+        item.imageUrl = publicMediaUrl(String(item._id), 'image');
         item.hasPicture = true;
       } else if (removeImage === 'true') {
-        if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
-          const oldPath = path.resolve(process.cwd(), item.imageUrl.replace(/^\//, ''));
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
+        item.imageData = undefined;
+        item.imageMime = null;
         item.imageUrl = null;
         item.hasPicture = false;
       }
 
-      // Handle Audio replacement or removal
-      if (files?.audio && files.audio[0]) {
-        if (item.audioUrl && item.audioUrl.startsWith('/uploads/')) {
-          const oldPath = path.resolve(process.cwd(), item.audioUrl.replace(/^\//, ''));
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
-        item.audioUrl = `/uploads/audio/${files.audio[0].filename}`;
+      if (files?.audio?.[0]) {
+        item.audioData = files.audio[0].buffer;
+        item.audioMime = files.audio[0].mimetype;
+        item.audioUrl = publicMediaUrl(String(item._id), 'audio');
         item.hasAudio = true;
       } else if (removeAudio === 'true') {
-        if (item.audioUrl && item.audioUrl.startsWith('/uploads/')) {
-          const oldPath = path.resolve(process.cwd(), item.audioUrl.replace(/^\//, ''));
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
+        item.audioData = undefined;
+        item.audioMime = null;
         item.audioUrl = null;
         item.hasAudio = false;
       }
@@ -480,42 +572,26 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
     if (letter) item.letter = letter.trim();
     else if (name) item.letter = getLetterGroup(name);
 
-    if (files?.image && files.image[0]) {
-      if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
-        const oldPath = path.resolve(process.cwd(), item.imageUrl.replace(/^\//, ''));
-        if (fs.existsSync(oldPath)) {
-          try { fs.unlinkSync(oldPath); } catch (_) {}
-        }
-      }
-      item.imageUrl = `/uploads/images/${files.image[0].filename}`;
+    if (files?.image?.[0]) {
+      item.imageData = files.image[0].buffer.toString('base64');
+      item.imageMime = files.image[0].mimetype;
+      item.imageUrl = publicMediaUrl(item._id, 'image');
       item.hasPicture = true;
     } else if (removeImage === 'true') {
-      if (item.imageUrl && item.imageUrl.startsWith('/uploads/')) {
-        const oldPath = path.resolve(process.cwd(), item.imageUrl.replace(/^\//, ''));
-        if (fs.existsSync(oldPath)) {
-          try { fs.unlinkSync(oldPath); } catch (_) {}
-        }
-      }
+      item.imageData = null;
+      item.imageMime = null;
       item.imageUrl = null;
       item.hasPicture = false;
     }
 
-    if (files?.audio && files.audio[0]) {
-      if (item.audioUrl && item.audioUrl.startsWith('/uploads/')) {
-        const oldPath = path.resolve(process.cwd(), item.audioUrl.replace(/^\//, ''));
-        if (fs.existsSync(oldPath)) {
-          try { fs.unlinkSync(oldPath); } catch (_) {}
-        }
-      }
-      item.audioUrl = `/uploads/audio/${files.audio[0].filename}`;
+    if (files?.audio?.[0]) {
+      item.audioData = files.audio[0].buffer.toString('base64');
+      item.audioMime = files.audio[0].mimetype;
+      item.audioUrl = publicMediaUrl(item._id, 'audio');
       item.hasAudio = true;
     } else if (removeAudio === 'true') {
-      if (item.audioUrl && item.audioUrl.startsWith('/uploads/')) {
-        const oldPath = path.resolve(process.cwd(), item.audioUrl.replace(/^\//, ''));
-        if (fs.existsSync(oldPath)) {
-          try { fs.unlinkSync(oldPath); } catch (_) {}
-        }
-      }
+      item.audioData = null;
+      item.audioMime = null;
       item.audioUrl = null;
       item.hasAudio = false;
     }
@@ -527,7 +603,7 @@ export async function updateMedicinal(req: Request, res: Response): Promise<void
     res.json({
       success: true,
       message: 'Medicinal entry updated successfully (Local Storage)',
-      data: item,
+      data: withoutMediaPayload(item),
     });
   } catch (error: any) {
     res.status(500).json({
