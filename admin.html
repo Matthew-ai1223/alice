@@ -1115,7 +1115,7 @@
               <div class="dropzone-label">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                 <strong>Click or drop photo here</strong>
-                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP. Images over 4MB are compressed to 3MB.</span>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP. Image + audio together must stay under 4MB.</span>
               </div>
             </div>
             <div id="image-preview" class="preview-box" style="display: none;">
@@ -1133,7 +1133,7 @@
               <div class="dropzone-label">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
                 <strong>Click or drop audio here</strong>
-                <span style="font-size: 0.72rem; color: #7080bc;">Supports MP3, WAV, M4A, OGG (Max 4MB)</span>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports MP3, WAV, M4A, OGG. Image + audio together must stay under 4MB.</span>
               </div>
             </div>
             <div id="audio-preview" class="preview-box" style="display: none;">
@@ -1400,8 +1400,8 @@
       return `${API_BASE}${url}`;
     }
 
-    const IMAGE_COMPRESS_TRIGGER = 4 * 1024 * 1024;
-    const IMAGE_TARGET_BYTES = 3 * 1024 * 1024;
+    const MAX_COMBINED_BYTES = 4 * 1024 * 1024;
+    let originalImageFile = null;
     let preparedImageFile = null;
     let preparedPortraitFile = null;
 
@@ -1484,10 +1484,41 @@
       });
     }
 
-    async function prepareImageFile(file) {
+    async function prepareImageFile(file, targetBytes = MAX_COMBINED_BYTES) {
       if (!file || !String(file.type || '').startsWith('image/')) return file;
-      if (file.size <= IMAGE_COMPRESS_TRIGGER) return file;
-      return compressImageToTarget(file, IMAGE_TARGET_BYTES);
+      if (file.size <= targetBytes) return file;
+      return compressImageToTarget(file, targetBytes);
+    }
+
+    function currentAudioFile() {
+      const input = document.getElementById('audio-file');
+      return input && input.files && input.files[0] ? input.files[0] : null;
+    }
+
+    function imageBudgetForAudio(audioBytes) {
+      return Math.max(80 * 1024, MAX_COMBINED_BYTES - (audioBytes || 0));
+    }
+
+    function mediaTotalBytes(imageFile, audioFile) {
+      return (imageFile ? imageFile.size : 0) + (audioFile ? audioFile.size : 0);
+    }
+
+    async function fitImageToCombinedLimit(sourceFile, audioFile) {
+      if (!sourceFile) return sourceFile;
+      const audioBytes = audioFile ? audioFile.size : 0;
+      return prepareImageFile(sourceFile, imageBudgetForAudio(audioBytes));
+    }
+
+    function showPreparedImage(file, extraNote) {
+      preparedImageFile = file;
+      assignFileToInput(imageFileInput, file);
+      previewImg.src = URL.createObjectURL(file);
+      imagePreview.style.display = 'flex';
+      const audio = currentAudioFile();
+      const total = mediaTotalBytes(file, audio);
+      previewImgName.textContent = extraNote
+        ? `${file.name} (${formatFileSize(file.size)}) — ${extraNote}`
+        : `${file.name} (${formatFileSize(file.size)}${audio ? `, ${formatFileSize(total)} with audio` : ''})`;
     }
 
     const ICON = {
@@ -1645,38 +1676,65 @@
     imageFileInput.addEventListener('change', async (e) => {
       let file = e.target.files[0];
       if (!file) {
+        originalImageFile = null;
         preparedImageFile = null;
         return;
       }
 
+      originalImageFile = file;
       imagePreview.style.display = 'flex';
-      if (file.size > IMAGE_COMPRESS_TRIGGER) {
-        previewImgName.textContent = `Compressing ${file.name} (${formatFileSize(file.size)})…`;
-        try {
-          const originalSize = file.size;
-          file = await prepareImageFile(file);
-          assignFileToInput(imageFileInput, file);
-          showToast(`Image reduced from ${formatFileSize(originalSize)} to ${formatFileSize(file.size)}`);
-        } catch (_) {
-          showToast('Could not compress this image. Please choose a smaller file.', 'error');
-        }
-      }
+      previewImgName.textContent = `Preparing ${file.name} (${formatFileSize(file.size)})…`;
 
-      preparedImageFile = file;
-      previewImg.src = URL.createObjectURL(file);
-      previewImgName.textContent = `${file.name} (${formatFileSize(file.size)})`;
+      const audio = currentAudioFile();
+      try {
+        const originalSize = file.size;
+        file = await fitImageToCombinedLimit(file, audio);
+        const total = mediaTotalBytes(file, audio);
+        showPreparedImage(file);
+        if (total > MAX_COMBINED_BYTES) {
+          showToast(`Image + audio is ${formatFileSize(total)}. Please choose a shorter audio file so both stay under 4MB.`, 'error');
+        } else if (file.size < originalSize) {
+          showToast(`Image reduced from ${formatFileSize(originalSize)} to ${formatFileSize(file.size)} so media stays under 4MB.`);
+        }
+      } catch (_) {
+        showToast('Could not compress this image. Please choose a smaller file.', 'error');
+      }
     });
 
-    audioFileInput.addEventListener('change', (e) => {
+    audioFileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (file) {
-        previewAud.src = URL.createObjectURL(file);
-        audioPreview.style.display = 'flex';
+      if (!file) return;
+
+      if (file.size > MAX_COMBINED_BYTES) {
+        showToast('Audio must be under 4MB. Please choose a shorter recording.', 'error');
+        clearAudioUpload();
+        return;
+      }
+
+      previewAud.src = URL.createObjectURL(file);
+      audioPreview.style.display = 'flex';
+
+      const imageSource = originalImageFile || preparedImageFile;
+      if (!imageSource) return;
+
+      previewImgName.textContent = 'Adjusting image so image + audio stay under 4MB…';
+      try {
+        const fitted = await fitImageToCombinedLimit(imageSource, file);
+        const total = mediaTotalBytes(fitted, file);
+        showPreparedImage(fitted);
+        if (total > MAX_COMBINED_BYTES) {
+          showToast(`Image + audio is ${formatFileSize(total)}. Please choose a shorter audio file so both stay under 4MB.`, 'error');
+        } else {
+          showToast(`Media total is ${formatFileSize(total)} (under 4MB).`);
+        }
+      } catch (_) {
+        showToast('Could not resize the image to fit this audio file.', 'error');
       }
     });
 
     function clearImageUpload() {
       imageFileInput.value = '';
+      originalImageFile = null;
       preparedImageFile = null;
       imagePreview.style.display = 'none';
       previewImg.src = '';
@@ -1715,26 +1773,34 @@
       formData.append('exampleEnglish', document.getElementById('exampleEnglish').value);
       formData.append('extraFields', JSON.stringify(collectExtraFields()));
 
-      const imageToUpload = preparedImageFile || imageFileInput.files[0];
+      const audioToUpload = currentAudioFile();
+      if (audioToUpload && audioToUpload.size > MAX_COMBINED_BYTES) {
+        showToast('Audio must be under 4MB. Please choose a shorter recording.', 'error');
+        return;
+      }
+
+      const imageToUpload = originalImageFile || preparedImageFile || imageFileInput.files[0];
+      let readyImage = imageToUpload || null;
       if (imageToUpload) {
-        let readyImage = imageToUpload;
         try {
-          if (imageToUpload.size > IMAGE_COMPRESS_TRIGGER) {
-            showToast('Compressing image before upload…');
-          }
-          readyImage = await prepareImageFile(imageToUpload);
+          readyImage = await fitImageToCombinedLimit(imageToUpload, audioToUpload);
         } catch (_) {
           showToast('Could not compress this image. Please choose a smaller photo.', 'error');
           return;
         }
-        if (readyImage.size > IMAGE_COMPRESS_TRIGGER) {
-          showToast('Image is still larger than 4MB after compression. Please choose a smaller photo.', 'error');
-          return;
-        }
+      }
+
+      const total = mediaTotalBytes(readyImage, audioToUpload);
+      if (total > MAX_COMBINED_BYTES) {
+        showToast(`Image + audio is ${formatFileSize(total)}. Please use a smaller photo or a shorter recording so both stay under 4MB.`, 'error');
+        return;
+      }
+
+      if (readyImage) {
         formData.append('image', readyImage, readyImage.name);
       }
-      if (audioFileInput.files[0]) {
-        formData.append('audio', audioFileInput.files[0]);
+      if (audioToUpload) {
+        formData.append('audio', audioToUpload, audioToUpload.name);
       }
 
       submitBtn.disabled = true;
@@ -1960,8 +2026,8 @@
         const portraitInput = document.getElementById('about-portrait-file');
         const portraitFile = preparedPortraitFile || portraitInput.files[0];
         if (portraitFile) {
-          const readyPortrait = await prepareImageFile(portraitFile);
-          if (readyPortrait.size > IMAGE_COMPRESS_TRIGGER) {
+          const readyPortrait = await prepareImageFile(portraitFile, MAX_COMBINED_BYTES);
+          if (readyPortrait.size > MAX_COMBINED_BYTES) {
             throw new Error('Portrait is still larger than 4MB after compression. Please choose a smaller photo.');
           }
           const portraitData = new FormData();
@@ -2001,11 +2067,11 @@
         preparedPortraitFile = null;
         return;
       }
-      if (file.size > IMAGE_COMPRESS_TRIGGER) {
+      if (file.size > MAX_COMBINED_BYTES) {
         document.getElementById('about-portrait-name').textContent = `Compressing ${file.name}…`;
         try {
           const originalSize = file.size;
-          file = await prepareImageFile(file);
+          file = await prepareImageFile(file, MAX_COMBINED_BYTES);
           assignFileToInput(input, file);
           showToast(`Portrait reduced from ${formatFileSize(originalSize)} to ${formatFileSize(file.size)}`);
         } catch (_) {
