@@ -1115,7 +1115,7 @@
               <div class="dropzone-label">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                 <strong>Click or drop photo here</strong>
-                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP (Max 4MB)</span>
+                <span style="font-size: 0.72rem; color: #7080bc;">Supports JPG, PNG, WEBP. Images over 4MB are compressed to 3MB.</span>
               </div>
             </div>
             <div id="image-preview" class="preview-box" style="display: none;">
@@ -1400,6 +1400,96 @@
       return `${API_BASE}${url}`;
     }
 
+    const IMAGE_COMPRESS_TRIGGER = 4 * 1024 * 1024;
+    const IMAGE_TARGET_BYTES = 3 * 1024 * 1024;
+    let preparedImageFile = null;
+    let preparedPortraitFile = null;
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function assignFileToInput(input, file) {
+      try {
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+      } catch (_) {}
+    }
+
+    function canvasToBlob(canvas, type, quality) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), type, quality);
+      });
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve(img);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('Could not read image'));
+        };
+        img.src = url;
+      });
+    }
+
+    async function compressImageToTarget(file, targetBytes) {
+      const img = await loadImageFromFile(file);
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+      const maxDim = 2560;
+      if (Math.max(width, height) > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      let quality = 0.85;
+      let blob = null;
+
+      for (let pass = 0; pass < 14; pass += 1) {
+        canvas.width = Math.max(1, width);
+        canvas.height = Math.max(1, height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+        if (!blob) break;
+        if (blob.size <= targetBytes) break;
+        if (quality > 0.45) {
+          quality = Math.max(0.45, quality - 0.1);
+        } else {
+          width = Math.round(width * 0.82);
+          height = Math.round(height * 0.82);
+          quality = 0.7;
+        }
+        if (width < 360 || height < 360) break;
+      }
+
+      if (!blob) return file;
+      const baseName = file.name.replace(/\.[^.]+$/, '') || 'image';
+      return new File([blob], `${baseName}.jpg`, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+
+    async function prepareImageFile(file) {
+      if (!file || !String(file.type || '').startsWith('image/')) return file;
+      if (file.size <= IMAGE_COMPRESS_TRIGGER) return file;
+      return compressImageToTarget(file, IMAGE_TARGET_BYTES);
+    }
+
     const ICON = {
       leaf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>',
       play: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
@@ -1552,13 +1642,29 @@
     }
 
     // 6. Image & Audio Previews
-    imageFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        previewImg.src = URL.createObjectURL(file);
-        previewImgName.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
-        imagePreview.style.display = 'flex';
+    imageFileInput.addEventListener('change', async (e) => {
+      let file = e.target.files[0];
+      if (!file) {
+        preparedImageFile = null;
+        return;
       }
+
+      imagePreview.style.display = 'flex';
+      if (file.size > IMAGE_COMPRESS_TRIGGER) {
+        previewImgName.textContent = `Compressing ${file.name} (${formatFileSize(file.size)})…`;
+        try {
+          const originalSize = file.size;
+          file = await prepareImageFile(file);
+          assignFileToInput(imageFileInput, file);
+          showToast(`Image reduced from ${formatFileSize(originalSize)} to ${formatFileSize(file.size)}`);
+        } catch (_) {
+          showToast('Could not compress this image. Please choose a smaller file.', 'error');
+        }
+      }
+
+      preparedImageFile = file;
+      previewImg.src = URL.createObjectURL(file);
+      previewImgName.textContent = `${file.name} (${formatFileSize(file.size)})`;
     });
 
     audioFileInput.addEventListener('change', (e) => {
@@ -1571,6 +1677,7 @@
 
     function clearImageUpload() {
       imageFileInput.value = '';
+      preparedImageFile = null;
       imagePreview.style.display = 'none';
       previewImg.src = '';
     }
@@ -1608,8 +1715,23 @@
       formData.append('exampleEnglish', document.getElementById('exampleEnglish').value);
       formData.append('extraFields', JSON.stringify(collectExtraFields()));
 
-      if (imageFileInput.files[0]) {
-        formData.append('image', imageFileInput.files[0]);
+      const imageToUpload = preparedImageFile || imageFileInput.files[0];
+      if (imageToUpload) {
+        let readyImage = imageToUpload;
+        try {
+          if (imageToUpload.size > IMAGE_COMPRESS_TRIGGER) {
+            showToast('Compressing image before upload…');
+          }
+          readyImage = await prepareImageFile(imageToUpload);
+        } catch (_) {
+          showToast('Could not compress this image. Please choose a smaller photo.', 'error');
+          return;
+        }
+        if (readyImage.size > IMAGE_COMPRESS_TRIGGER) {
+          showToast('Image is still larger than 4MB after compression. Please choose a smaller photo.', 'error');
+          return;
+        }
+        formData.append('image', readyImage, readyImage.name);
       }
       if (audioFileInput.files[0]) {
         formData.append('audio', audioFileInput.files[0]);
@@ -1835,10 +1957,15 @@
       saveBtn.textContent = 'Saving...';
 
       try {
-        const portraitFile = document.getElementById('about-portrait-file').files[0];
+        const portraitInput = document.getElementById('about-portrait-file');
+        const portraitFile = preparedPortraitFile || portraitInput.files[0];
         if (portraitFile) {
+          const readyPortrait = await prepareImageFile(portraitFile);
+          if (readyPortrait.size > IMAGE_COMPRESS_TRIGGER) {
+            throw new Error('Portrait is still larger than 4MB after compression. Please choose a smaller photo.');
+          }
           const portraitData = new FormData();
-          portraitData.append('image', portraitFile);
+          portraitData.append('image', readyPortrait, readyPortrait.name);
           const portraitRes = await fetch(`${ABOUT_URL}/portrait`, {
             method: 'POST',
             body: portraitData,
@@ -1857,6 +1984,7 @@
         if (!json.success) throw new Error(json.message || 'Save failed');
         fillAboutForm(json.data);
         document.getElementById('about-portrait-file').value = '';
+        preparedPortraitFile = null;
         showToast('About page saved.');
       } catch (err) {
         showToast(err.message || 'Could not save About page.', 'error');
@@ -1866,11 +1994,27 @@
       }
     });
 
-    document.getElementById('about-portrait-file').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    document.getElementById('about-portrait-file').addEventListener('change', async (e) => {
+      const input = e.target;
+      let file = input.files[0];
+      if (!file) {
+        preparedPortraitFile = null;
+        return;
+      }
+      if (file.size > IMAGE_COMPRESS_TRIGGER) {
+        document.getElementById('about-portrait-name').textContent = `Compressing ${file.name}…`;
+        try {
+          const originalSize = file.size;
+          file = await prepareImageFile(file);
+          assignFileToInput(input, file);
+          showToast(`Portrait reduced from ${formatFileSize(originalSize)} to ${formatFileSize(file.size)}`);
+        } catch (_) {
+          showToast('Could not compress this portrait. Please choose a smaller file.', 'error');
+        }
+      }
+      preparedPortraitFile = file;
       document.getElementById('about-portrait-img').src = URL.createObjectURL(file);
-      document.getElementById('about-portrait-name').textContent = file.name;
+      document.getElementById('about-portrait-name').textContent = `${file.name} (${formatFileSize(file.size)})`;
     });
 
     function openAdmin() {
